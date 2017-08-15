@@ -1,40 +1,18 @@
 <template>
   <div id="app">
-    <img src="./assets/logo.png">
-    <h1>Selected</h1>
-    <div>
-        <strong v-if="selectedBlock">{{ selectedBlock.title }}</strong>
-    </div>
-    <div v-if="selectedBlock">
-        <strong>Start:</strong> {{ moment(selectedBlock.start).format('DD MMMM YY') }}
-    </div>
-    <div v-if="selectedBlock">
-        <strong>Duration:</strong> {{ selectedBlock.duration }} days
-    </div>
-    <div v-if="selectedBlock">
-        <strong>Page:</strong> {{ selectedBlock.page }}
-    </div>
-    <div v-if="selectedBlock">
-        <strong>Duration:</strong>
-        <input v-model="selectedBlock.duration" type="number">
-    </div>
-
-    <input type="date" v-model="params.from"/>
-    <input type="date" v-model="params.to"/>
-    <!-- <pre>{{ selectedBlock }}</pre> -->
-    <hello :calculate="false" :events="ganttData" :end-period="endPeriod" @load-more="loadMore" @selected="selected" :grouping="true"></hello>
+    <gantt :calculate="false" :events="ganttData" :end-period="endPeriod" :start-period="startPeriod" @load-more="loadMore" @selected="selected" :grouping="true"></gantt>
   </div>
 </template>
 
 <script>
 import Vue from 'vue'
 import moment from 'moment'
-import Hello from './components/Gantt'
+import Gantt from './components/Gantt'
 
 export default {
     name: 'app',
     components: {
-        Hello,
+        Gantt,
     },
 
     data() {
@@ -42,7 +20,8 @@ export default {
             moment,
             initialLoad: false,
             selectedBlock: null,
-            endPeriod: moment().subtract(1, 'years').add(1, 'months'),
+            startPeriod: moment().startOf('month').startOf('week'),
+            endPeriod: moment().add(1, 'months'),
             params: {
                 from: moment().subtract(1, 'years').format('YYYY-MM-DD'),
                 to: moment().subtract(1, 'years').add(1, 'months').format('YYYY-MM-DD'),
@@ -51,60 +30,33 @@ export default {
             ganttData: [
                 {
                     title: 'Line One',
-                    description: 'A test',
-                    category: null,
-                    preset_id: null,
-                    offset: 1,
-                    duration: 1,
-                    label: '#41B883',
-                    error: false,
-                    editing: false,
-                    new_event: true,
-                    max_length: 1,
-                    max_times_to_run: 0,
-                    end_date_limit: '',
+                    offset: moment().diff(moment().startOf('month').startOf('week'), 'days'),
+                    duration: 4,
                     frequency: {
                         key: 'every_work_day',
                     },
                     dependencies: [],
+                    status: 'complete',
                 },
                 {
                     title: 'A New Event',
-                    description: 'Another test',
-                    category: null,
-                    preset_id: null,
-                    offset: 3,
+                    offset: moment().diff(moment().startOf('month').startOf('week'), 'days') + 3,
                     duration: 2,
-                    label: '#35495E',
-                    error: false,
-                    editing: false,
-                    new_event: true,
-                    max_length: 1,
-                    max_times_to_run: 0,
-                    end_date_limit: '',
                     frequency: {
                         key: 'weekly',
                     },
                     dependencies: [],
+                    status: 'in_progress',
                 },
                 {
                     title: 'Dependent Event',
-                    description: 'Another test',
-                    category: null,
-                    preset_id: null,
-                    offset: 5,
+                    offset: moment().diff(moment().startOf('month').startOf('week'), 'days') + 5,
                     duration: 2,
-                    label: '#41B883',
-                    error: false,
-                    editing: false,
-                    new_event: true,
-                    max_length: 1,
-                    max_times_to_run: 0,
-                    end_date_limit: '',
                     frequency: {
                         key: 'weekly',
                     },
                     dependencies: [0, 1],
+                    status: 'active',
                 },
             ],
         }
@@ -131,6 +83,7 @@ export default {
         },
 
         selected(block) {
+            console.log(block)
             this.selectedBlock = block
         },
     },
