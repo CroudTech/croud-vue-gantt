@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <gantt :calculate="false" :events="ganttData" :end-period="endPeriod" :start-period="startPeriod" @load-more="loadMore" @selected="selected" :grouping="true"></gantt>
+    <gantt :calculate="false" :events="ganttData" :end-period="endPeriod" :start-period="startPeriod" @load-more="loadMore" @selected="selected" :grouping="true" :show-repeats="false"></gantt>
   </div>
 </template>
 
@@ -33,10 +33,12 @@ export default {
                     offset: moment().diff(moment().startOf('month').startOf('week'), 'days'),
                     duration: 4,
                     frequency: {
-                        key: 'every_work_day',
+                        key: 'weekly',
                     },
                     dependencies: [],
                     status: 'complete',
+                    x: 0,
+                    width: 0,
                 },
                 {
                     title: 'A New Event',
@@ -47,6 +49,8 @@ export default {
                     },
                     dependencies: [],
                     status: 'in_progress',
+                    x: 0,
+                    width: 0,
                 },
                 {
                     title: 'Dependent Event',
@@ -57,6 +61,8 @@ export default {
                     },
                     dependencies: [0, 1],
                     status: 'active',
+                    x: 0,
+                    width: 0,
                 },
             ],
         }

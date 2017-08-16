@@ -60,9 +60,9 @@
 
                                         <rect v-if="!block.readOnly" class="drag-handle" @mousedown.prevent="adjustEnd(block, $event)" rx="5" ry="5" :x="block.x + block.width - 10" :y='block.y' width='10' :height='block.height' fill="#ccc"/>
 
-                                        <!--<rect v-for="child in block.children" rx="2" ry="2" :x="child.x" :y='child.y' :width='child.width' :height='child.height' class="repeat" :style="{fill: child.label}">
+                                        <rect v-if="showRepeats" v-for="child in block.children" rx="2" ry="2" :x="child.x" :y='child.y' :width='child.width' :height='child.height' class="repeat" :style="{fill: child.label}">
                                             <title>{{ child.title }}</title>
-                                        </rect>-->
+                                        </rect>
                                     </g>
                                 </g>
                             </g>
@@ -116,6 +116,9 @@
                 default: false,
             },
             grow: {
+                default: false,
+            },
+            showRepeats: {
                 default: false,
             },
         },
@@ -221,7 +224,7 @@
                     }
                     event.event_index = this.grouping ? index : i
 
-                    if (event.children && event.children.length) {
+                    if (this.showRepeats && event.children && event.children.length) {
                         event.children.map((ch) => {
                             ch.event_index = index
                             position(ch)
@@ -286,6 +289,12 @@
 
                     // curr.label = preset_labels[curr.preset_id]
                     curr.label = this.statusColors[curr.status]
+
+                    if (!this.showRepeats) {
+                        masterEvents.push(curr)
+                        return curr
+                    }
+
                     switch (curr.frequency.key) {
                     case 'daily':
                             // curr.label = '#0B8043'
@@ -408,7 +417,6 @@
                     }
 
                     this.cloned.ends_at = moment(this.cloned.ends_at).add(diff, 'days').format('YYYY-MM-DD')
-
                     position(this.cloned)
                     this.localSelected.x = this.cloned.x
                     this.localSelected.width = this.cloned.width
