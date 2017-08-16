@@ -2032,6 +2032,10 @@ eslint-config-airbnb-base@^11.0.1:
   version "11.1.2"
   resolved "https://registry.yarnpkg.com/eslint-config-airbnb-base/-/eslint-config-airbnb-base-11.1.2.tgz#259209a7678bf693e31cbe8f953f206b6aa7ccc3"
 
+eslint-config-croud@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/eslint-config-croud/-/eslint-config-croud-1.0.1.tgz#8c330d54b280a9830c29ddd8bab48ea14500d90b"
+
 eslint-friendly-formatter@^2.0.7:
   version "2.0.7"
   resolved "https://registry.yarnpkg.com/eslint-friendly-formatter/-/eslint-friendly-formatter-2.0.7.tgz#657f95a19af4989636afebb1cc9de6cebbd088ee"
