@@ -32,13 +32,10 @@ export default {
                     title: 'Line One',
                     offset: moment().diff(moment().startOf('month').startOf('week'), 'days'),
                     duration: 4,
-                    frequency: {
-                        key: 'weekly',
-                    },
-                    dependencies: [],
                     status: 'complete',
                     x: 0,
                     width: 0,
+                    readOnly: true,
                 },
                 {
                     title: 'A New Event',
@@ -60,6 +57,18 @@ export default {
                         key: 'weekly',
                     },
                     dependencies: [0, 1],
+                    status: 'active',
+                    x: 0,
+                    width: 0,
+                },
+                {
+                    title: 'Another Event',
+                    offset: moment().diff(moment().startOf('month').startOf('week'), 'days') + 7,
+                    duration: 4,
+                    frequency: {
+                        key: 'once',
+                    },
+                    dependencies: [2],
                     status: 'active',
                     x: 0,
                     width: 0,
