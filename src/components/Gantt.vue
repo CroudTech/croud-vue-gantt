@@ -33,7 +33,7 @@
                                 </g>
 
                                 <foreignObject width="100%" height="100%" transform="translate(0, 20)">
-                                    <div class="grid-pattern" :style="{height: limits.height + 'px'}"></div>
+                                    <div class="grid-pattern" :style="gridPatternStyles"></div>
                                 </foreignObject>
 
                                 <g class="paths" transform="translate(0, 20)">
@@ -340,6 +340,13 @@
 
                 return masterEvents
             },
+
+            gridPatternStyles() {
+                return {
+                    height: `${this.limits.height}px`,
+                    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='${this.scaleWidth * 7}' height='100' viewBox='0 0 ${this.scaleWidth * 7} 100'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.4'%3E%3Cpath opacity='.5' d='M0 0 H 5 V 100 H 0 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+                }
+            },
         },
 
         filters: {
@@ -563,7 +570,6 @@
 
     .grid-pattern {
         width: 100%;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='203.7' height='100' viewBox='0 0 203.7 100'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.4'%3E%3Cpath opacity='.5' d='M0 0 H 5 V 100 H 0 Z m29.1 0 h 1 V 100 h -1 Z m29.1 0 h 1 V 100 h -1 Z m29.1 0 h 1 V 100 h -1 Z m29.1 0 h 1 V 100 h -1 Z m29.1 0 h 1 V 100 h -1 Z m29.1 0 h 1 V 100 h -1 Z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
     }
 
     text.icon {
