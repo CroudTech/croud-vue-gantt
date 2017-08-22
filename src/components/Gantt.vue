@@ -577,6 +577,12 @@
         color: white;
         text-shadow: 0 0 1px rgba(0,0,0,0.5);
     }
+
+    .ctx-menu-container {
+        position: relative;
+        margin-top: -25px;
+        margin-left: 5px;
+    }
 </style>
 
 <style>
