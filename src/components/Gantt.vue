@@ -120,6 +120,17 @@
             showRepeats: {
                 default: false,
             },
+
+            statusColors: {
+                type: Object,
+                default() {
+                    return {
+                        complete: '#8bccba',
+                        active: '#6bc2e2',
+                        in_progress: '#fbbd08',
+                    }
+                },
+            },
         },
 
         components: {
@@ -147,12 +158,6 @@
 
                 localSelected: null,
                 cloned: null,
-
-                statusColors: {
-                    complete: '#8bccba',
-                    active: '#6bc2e2',
-                    in_progress: '#fbbd08',
-                },
             }
         },
 
