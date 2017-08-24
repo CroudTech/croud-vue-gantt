@@ -58,9 +58,11 @@
                                     </g>
                                     <foreignObject>
                                         <context-menu ref="ctxMenu">
-                                            <li @click="$emit('selected', localSelected)" class="item">
-                                                <i class="edit icon"></i>Edit
-                                            </li>
+                                            <slot name="context-menu" :selected="localSelected">
+                                                <li @click="$emit('selected', localSelected)" class="item">
+                                                    <i class="edit icon"></i>Edit
+                                                </li>
+                                            </slot>
                                         </context-menu>
                                     </foreignObject>
                                 </g>

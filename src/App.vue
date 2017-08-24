@@ -4,7 +4,16 @@
         complete: '#8bccba',
         active: '#6bc2e2',
         in_progress: '#fbbd08',
-    }" :readOnly="true"></gantt>
+    }" :readOnly="false">
+        <template slot="context-menu" scope="scope">
+            <li @click="selected(scope.selected)" class="item">
+                <i class="edit icon"></i>View
+            </li>
+            <li @click="postpone(scope.selected)" class="item">
+                <i class="calendar icon"></i>Postpone
+            </li>
+        </template>
+    </gantt>
   </div>
 </template>
 
@@ -104,6 +113,10 @@ export default {
         selected(block) {
             console.log(block)
             this.selectedBlock = block
+        },
+
+        postpone(block) {
+            block.offset += 1
         },
     },
 
