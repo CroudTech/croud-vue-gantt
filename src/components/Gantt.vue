@@ -44,13 +44,13 @@
                                     <g class="block" v-for="(block, $index) in nodes" >
                                         <title>{{ block.title }}</title>
 
-                                        <rect @contextmenu.prevent="openContext($event, block)" @click="select(block, $index)" @mousedown="adjustStart(block, $event)" rx="2" ry="2" :x="block.x" :y='block.y' :width='block.width' :height='block.height' :class="{editable: !block.readOnly}" :style="{fill: block.label}">
+                                        <rect @contextmenu.prevent="openContext($event, block)" @click="select(block, $index)" @mousedown="adjustStart(block, $event)" rx="2" ry="2" :x="block.x" :y='block.y' :width='block.width' :height='block.height' :class="{editable: !readOnly && !block.readOnly}" :style="{fill: block.label}">
                                             <title v-if="block.readOnly" >🔒{{ block.readOnly }}</title>
                                             <title v-else>{{ block.title }}</title>
                                         </rect>
                                         <text v-if="block.readOnly" :x="block.x + (block.width / 2)" :y="block.y + 2 * (block.height / 3)" style="font-family: Icons" class="icon" text-anchor="middle">&#xf023;</text>
 
-                                        <rect v-if="!block.readOnly" class="drag-handle" @mousedown.prevent="adjustEnd(block, $event)" rx="5" ry="5" :x="block.x + block.width - 10" :y='block.y' width='10' :height='block.height' fill="#ccc"/>
+                                        <rect v-if="!readOnly && !block.readOnly" class="drag-handle" @mousedown.prevent="adjustEnd(block, $event)" rx="5" ry="5" :x="block.x + block.width - 10" :y='block.y' width='10' :height='block.height' fill="#ccc"/>
 
                                         <rect v-if="showRepeats" v-for="child in block.children" rx="2" ry="2" :x="child.x" :y='child.y' :width='child.width' :height='child.height' class="repeat" :style="{fill: child.label}">
                                             <title>{{ child.title }}</title>
@@ -130,6 +130,11 @@
                         in_progress: '#fbbd08',
                     }
                 },
+            },
+
+            readOnly: {
+                type: Boolean,
+                default: false,
             },
         },
 
@@ -394,10 +399,14 @@
 
             select(block) {
                 this.localSelected = block
+                this.$emit('left-click-selected', block)
+                if (this.readOnly) {
+                    this.$emit('selected', block)
+                }
             },
 
             adjustStart(block, evt) {
-                if (evt.which === 3 || block.readOnly) return
+                if (evt.which === 3 || this.readOnly || block.readOnly) return
                 this.startMouse = evt
                 this.dragging = 'start'
                 this.localSelected = block
@@ -405,7 +414,7 @@
             },
 
             adjustEnd(block, evt) {
-                if (evt.which === 3 || block.readOnly) return
+                if (evt.which === 3 || this.readOnly || block.readOnly) return
                 this.startMouse = evt
                 this.dragging = 'end'
                 this.localSelected = block

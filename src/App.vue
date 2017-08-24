@@ -4,7 +4,7 @@
         complete: '#8bccba',
         active: '#6bc2e2',
         in_progress: '#fbbd08',
-    }"></gantt>
+    }" :readOnly="true"></gantt>
   </div>
 </template>
 
