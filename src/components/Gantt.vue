@@ -2,7 +2,7 @@
     <div>
         <div id="adpcalendar">
             <div id="timeline-sidebar">
-                <svg id="event-types" ref="svg" :width="300" :height='limits.height'>
+                <svg id="event-types" ref="svg" :width="titleWidth" :height='limits.height'>
                     <g class="rows" transform="translate(0, 0)">
                         <rect v-for="(block, $index) in groupings" x="0" :y="blockHeight * $index" width="100%" :height="blockHeight" stroke="#f5f5f5" stroke-width="2" ></rect>
                     </g>
@@ -18,14 +18,14 @@
                 <div id="timeline" class="timeline" ref="timeline">
                     <svg ref="svg" id="timeline-events" :width="svgWidth" :height='limits.height + 21'>
                         <g>
-                            <g class="rows" transform="translate(0, 20)">
-                                <rect v-for="(block, $index) in groupings" x="0" :y="blockHeight * $index" width="100%" :height="blockHeight" stroke="#f5f5f5" stroke-width="2" ></rect>
+                            <g class="rows">
+                                <rect v-for="(block, $index) in groupings" x="0" :y="blockHeight * $index + topMargin" width="100%" :height="blockHeight" stroke="#f5f5f5" stroke-width="2" ></rect>
                             </g>
 
-                            <g class="graph" transform="translate(300, 0)">
+                            <g class="graph">
                                 <g class="titles">
                                     <g v-for="(line, $index) in gridLines" v-if="$index % smartGrids === 1">
-                                        <text text-anchor="middle" :x="($index - 1) * hourWidth" y="10">{{ line }}</text>
+                                        <text text-anchor="middle" :x="($index - 1) * hourWidth + titleWidth" y="10">{{ line }}</text>
                                     </g>
                                     <foreignObject :x='svgWidth - 500' width="1" height="100%" v-if="inifinteScroll">
                                         <v-waypoint @waypoint="collide" :horizontal="true"></v-waypoint>
@@ -36,11 +36,11 @@
                                     <div class="grid-pattern" :style="gridPatternStyles"></div>
                                 </foreignObject>
 
-                                <g class="paths" transform="translate(0, 20)">
+                                <g class="paths">
                                     <path v-for="link in linkPaths" :d="link.path" :class="{critical: link.critical}" />
                                 </g>
 
-                                <g class="blocks" transform="translate(0, 20)">
+                                <g class="blocks">
                                     <g class="block" v-for="(block, $index) in nodes" >
                                         <title>{{ block.title }}</title>
 
@@ -163,6 +163,8 @@
                 category: null,
                 categoryWidth: 300,
 
+                titleWidth: 300,
+                topMargin: 20,
                 localSelected: null,
                 cloned: null,
             }
@@ -354,6 +356,7 @@
 
             gridPatternStyles() {
                 return {
+                    marginLeft: `${this.titleWidth}px`,
                     height: `${this.limits.height}px`,
                     backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='${this.scaleWidth * 7}' height='100' viewBox='0 0 ${this.scaleWidth * 7} 100'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.4'%3E%3Cpath opacity='.5' d='M0 0 H 5 V 100 H 0 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
                 }
@@ -392,10 +395,10 @@
 
             position(event) {
                 event.page = event.page || 1
-                event.x = ((event.offset + this.globalOffset) + ((event.page - 1) * 30)) * this.scaleWidth
+                event.x = (((event.offset + this.globalOffset) + ((event.page - 1) * 30)) * this.scaleWidth) + this.titleWidth
                 event.width = event.duration * this.scaleWidth
                 event.height = this.blockHeight - 15
-                event.y = (event.event_index * this.blockHeight) + 7.5
+                event.y = (event.event_index * this.blockHeight) + 7.5 + this.topMargin
                 return event
             },
 
