@@ -1,6 +1,6 @@
-const Gantt = require('./components/Gantt.vue')
+import Gantt from './components/Gantt'
 
-module.exports = {
+export default {
     install(Vue) {
         Vue.component('croud-gantt', Gantt)
     },
