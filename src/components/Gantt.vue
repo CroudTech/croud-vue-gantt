@@ -8,7 +8,7 @@
                     </g>
                     <g v-for="(block, $index) in groupings" transform="translate(0, 0)" >
                         <title>{{ block }}</title>
-                        <text @click="select(block)" text-anchor="right" :x="5" :y="(blockHeight * $index) + 5 +(blockHeight / 2)">{{ block | truncate(35) }}</text>
+                        <text @click="select(block)" text-anchor="right" :x="5" :y="(blockHeight * $index) + 5 +(blockHeight / 2)">{{ block | truncate(52) }}</text>
                     </g>
                 </svg>
             </div>
