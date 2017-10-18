@@ -6,7 +6,7 @@
 You can add this plugin to your project using yarn
 
 ```bash
-yarn add git@github.com:CroudSupport/croud-vue-gantt.git
+yarn add croud-vue-gantt
 ```
 
 You can then install the plugin in your Vue application
