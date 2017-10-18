@@ -1,6 +1,6 @@
 {
   "name": "croud-vue-gantt",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A Vue.js gantt component optimised for croud control",
   "author": "Brock <brock.reece@croud.co.uk>",
   "private": false,
