@@ -1,4 +1,6 @@
 # croud-vue-gantt
+[![npm version](https://badge.fury.io/js/croud-vue-gantt.svg)](https://badge.fury.io/js/croud-vue-gantt)
+
 
 > A Vue.js plugin that adds a gantt component to your project
 
