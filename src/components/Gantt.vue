@@ -3,28 +3,27 @@
         <div id="adpcalendar">
             <div id="timeline-sidebar">
                 <svg id="event-types" ref="svg" :width="titleWidth" :height='limits.height'>
-                    <g class="rows" transform="translate(0, 0)">
-                        <rect v-for="(block, $index) in groupings" x="0" :y="blockHeight * $index" width="100%" :height="blockHeight" stroke="#f5f5f5" stroke-width="2" ></rect>
+                    <g class="rows">
+                        <rect v-for="(block, $index) in groupings" x="0" :y="blockHeight * $index" width="100%" :height="blockHeight" stroke="#f5f5f5" stroke-width="2" :key="$index"></rect>
                     </g>
-                    <g v-for="(block, $index) in groupings" transform="translate(0, 0)" >
+                    <g v-for="(block, $index) in groupings" :key="$index">
                         <title>{{ block }}</title>
                         <text @click="select(block)" text-anchor="right" :x="5" :y="(blockHeight * $index) + 5 +(blockHeight / 2)">{{ block | truncate(52) }}</text>
                     </g>
                 </svg>
             </div>
 
-            <div id="timeline-header"></div>
             <div id="timeline-container" ref="container" @mousemove="move" @mouseup="mouseUp">
                 <div id="timeline" class="timeline" ref="timeline">
                     <svg ref="svg" id="timeline-events" :width="svgWidth" :height='limits.height + 21'>
                         <g>
                             <g class="rows">
-                                <rect v-for="(block, $index) in groupings" x="0" :y="blockHeight * $index + topMargin" width="100%" :height="blockHeight" stroke="#f5f5f5" stroke-width="2" ></rect>
+                                <rect v-for="(block, $index) in groupings" x="0" :y="blockHeight * $index + topMargin" width="100%" :height="blockHeight" stroke="#f5f5f5" stroke-width="2" :key="$index"></rect>
                             </g>
 
                             <g class="graph">
                                 <g class="titles">
-                                    <g v-for="(line, $index) in gridLines" v-if="$index % smartGrids === 1">
+                                    <g v-for="(line, $index) in gridLines" v-if="$index % smartGrids === 1" :key="$index">
                                         <text text-anchor="middle" :x="($index - 1) * hourWidth + titleWidth" y="10">{{ line }}</text>
                                     </g>
                                     <foreignObject :x='svgWidth - 500' width="1" height="100%" v-if="inifinteScroll">
@@ -32,16 +31,16 @@
                                     </foreignObject>
                                 </g>
 
-                                <foreignObject width="100%" height="100%" transform="translate(0, 20)">
+                                <foreignObject width="100%" height="100%">
                                     <div class="grid-pattern" :style="gridPatternStyles"></div>
                                 </foreignObject>
 
                                 <g class="paths">
-                                    <path v-for="link in linkPaths" :d="link.path" :class="{critical: link.critical}" />
+                                    <path v-for="link in linkPaths" :d="link.path" :class="{critical: link.critical}" :key="link"/>
                                 </g>
 
                                 <g class="blocks">
-                                    <g class="block" v-for="(block, $index) in nodes" >
+                                    <g class="block" v-for="(block, $index) in nodes" :key="$index">
                                         <title>{{ block.title }}</title>
 
                                         <rect @contextmenu.prevent="openContext($event, block)" @click="select(block, $index)" @mousedown="adjustStart(block, $event)" rx="2" ry="2" :x="block.x" :y='block.y' :width='block.width' :height='block.height' :class="{editable: !readOnly && !block.readOnly}" :style="{fill: block.label}">
@@ -52,7 +51,7 @@
 
                                         <rect v-if="!readOnly && !block.readOnly" class="drag-handle" @mousedown.prevent="adjustEnd(block, $event)" rx="5" ry="5" :x="block.x + block.width - 10" :y='block.y' width='10' :height='block.height' fill="#ccc"/>
 
-                                        <rect v-if="showRepeats" v-for="child in block.children" rx="2" ry="2" :x="child.x" :y='child.y' :width='child.width' :height='child.height' class="repeat" :style="{fill: child.label}">
+                                        <rect v-if="showRepeats" v-for="child in block.children" rx="2" ry="2" :x="child.x" :y='child.y' :width='child.width' :height='child.height' class="repeat" :style="{fill: child.label}" :key="child">
                                             <title>{{ child.title }}</title>
                                         </rect>
                                     </g>
@@ -163,7 +162,7 @@
                 category: null,
                 categoryWidth: 300,
 
-                titleWidth: 300,
+                titleWidth: 0,
                 topMargin: 20,
                 localSelected: null,
                 cloned: null,
@@ -356,6 +355,7 @@
 
             gridPatternStyles() {
                 return {
+                    marginTop: '20px',
                     marginLeft: `${this.titleWidth}px`,
                     height: `${this.limits.height}px`,
                     backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='${this.scaleWidth * 7}' height='100' viewBox='0 0 ${this.scaleWidth * 7} 100'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.4'%3E%3Cpath opacity='.5' d='M0 0 H 5 V 100 H 0 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
@@ -545,26 +545,21 @@
     }
 
     #timeline-sidebar {
-        position:absolute;
         padding-top:30px;
         overflow: hidden;
         border-right: 5px solid rgba(200, 200, 200, 1);
-        transform: translateY(20px);
+        margin-top: 20px;
+        min-width: 300px;
+    }
+    #timeline-container {
+        overflow-x: auto;
+        margin-top: 30px;
     }
 
     #timeline {
         width: 100%;
         display: block;
         overflow-x: scroll;
-    }
-    #timeline-header {
-        overflow: hidden;
-        background: white;
-        position: relative;
-        z-index: 1000;
-        top: 20px;
-        width: 300px;
-        height: 30px;
     }
     #event-types {
         width: 300px;
@@ -583,8 +578,9 @@
     }
     #adpcalendar {
         overflow: hidden;
-        transform: translateY(-20px);
+        margin-top: -20px;
         margin-bottom: 20px;
+        display: flex;
     }
 
     .grid-pattern {
