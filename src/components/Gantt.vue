@@ -2,72 +2,77 @@
     <div>
         <div id="adpcalendar">
             <div id="timeline-sidebar">
-                <svg id="event-types" ref="svg" :width="titleWidth" :height='limits.height'>
-                    <g class="rows">
-                        <rect v-for="(block, $index) in groupings" x="0" :y="blockHeight * $index" width="100%" :height="blockHeight" stroke="#f5f5f5" stroke-width="2" :key="$index"></rect>
-                    </g>
-                    <g v-for="(block, $index) in groupings" :key="$index">
-                        <title>{{ block }}</title>
-                        <text @click="select(block)" text-anchor="right" :x="5" :y="(blockHeight * $index) + 5 +(blockHeight / 2)">{{ block | truncate(52) }}</text>
-                    </g>
-                </svg>
+                <div v-for="i in categoryGroupings" :key="i" >
+                    <div :style="{height: `${topMargin}px`}" @click="i.show =! i.show">{{ i.title }}</div>
+                    <svg id="event-types" ref="svg" :width="titleWidth" :height='limits.height' v-if="i.show">
+                        <g class="rows">
+                            <rect v-for="(block, $index) in groupings" x="0" :y="blockHeight * $index" width="100%" :height="blockHeight" stroke="#f5f5f5" stroke-width="2" :key="$index"></rect>
+                        </g>
+                        <g v-for="(block, $index) in groupings" :key="$index">
+                            <title>{{ block }}</title>
+                            <text @click="select(block)" text-anchor="right" :x="5" :y="(blockHeight * $index) + 5 +(blockHeight / 2)">{{ block | truncate(52) }}</text>
+                        </g>
+                    </svg>
+                </div>
             </div>
 
             <div id="timeline-container" ref="container" @mousemove="move" @mouseup="mouseUp">
                 <div id="timeline" class="timeline" ref="timeline">
-                    <svg ref="svg" id="timeline-events" :width="svgWidth" :height='limits.height + 21'>
-                        <g>
-                            <g class="rows">
-                                <rect v-for="(block, $index) in groupings" x="0" :y="blockHeight * $index + topMargin" width="100%" :height="blockHeight" stroke="#f5f5f5" stroke-width="2" :key="$index"></rect>
-                            </g>
+                    <div v-for="(i, index) in categoryGroupings" :key="i">
+                        <svg ref="svg" id="timeline-events" :width="svgWidth" :height='limits.height + 21' v-if="i.show">
+                            <g>
+                                <g class="rows">
+                                    <rect v-for="(block, $index) in groupings" x="0" :y="blockHeight * $index + topMargin" width="100%" :height="blockHeight" stroke="#f5f5f5" stroke-width="2" :key="$index"></rect>
+                                </g>
 
-                            <g class="graph">
-                                <g class="titles">
-                                    <g v-for="(line, $index) in gridLines" v-if="$index % smartGrids === 1" :key="$index">
-                                        <text text-anchor="middle" :x="($index - 1) * hourWidth + titleWidth" y="10">{{ line }}</text>
+                                <g class="graph">
+                                    <g class="titles" v-if="index === 0">
+                                        <g v-for="(line, $index) in gridLines" v-if="$index % smartGrids === 1" :key="$index">
+                                            <text text-anchor="middle" :x="($index - 1) * hourWidth + titleWidth" y="10">{{ line }}</text>
+                                        </g>
+                                        <foreignObject :x='svgWidth - 500' width="1" height="100%" v-if="inifinteScroll">
+                                            <v-waypoint @waypoint="collide" :horizontal="true"></v-waypoint>
+                                        </foreignObject>
                                     </g>
-                                    <foreignObject :x='svgWidth - 500' width="1" height="100%" v-if="inifinteScroll">
-                                        <v-waypoint @waypoint="collide" :horizontal="true"></v-waypoint>
+
+                                    <foreignObject width="100%" height="100%">
+                                        <div class="grid-pattern" :style="gridPatternStyles"></div>
                                     </foreignObject>
-                                </g>
 
-                                <foreignObject width="100%" height="100%">
-                                    <div class="grid-pattern" :style="gridPatternStyles"></div>
-                                </foreignObject>
-
-                                <g class="paths">
-                                    <path v-for="link in linkPaths" :d="link.path" :class="{critical: link.critical}" :key="link"/>
-                                </g>
-
-                                <g class="blocks">
-                                    <g class="block" v-for="(block, $index) in nodes" :key="$index">
-                                        <title>{{ block.title }}</title>
-
-                                        <rect @contextmenu.prevent="openContext($event, block)" @click="select(block, $index)" @mousedown="adjustStart(block, $event)" rx="2" ry="2" :x="block.x" :y='block.y' :width='block.width' :height='block.height' :class="{editable: !readOnly && !block.readOnly}" :style="{fill: block.label}">
-                                            <title v-if="block.readOnly" >🔒{{ block.readOnly }}</title>
-                                            <title v-else>{{ block.title }}</title>
-                                        </rect>
-                                        <text v-if="block.readOnly" :x="block.x + (block.width / 2)" :y="block.y + 2 * (block.height / 3)" style="font-family: Icons" class="icon" text-anchor="middle">&#xf023;</text>
-
-                                        <rect v-if="!readOnly && !block.readOnly" class="drag-handle" @mousedown.prevent="adjustEnd(block, $event)" rx="5" ry="5" :x="block.x + block.width - 10" :y='block.y' width='10' :height='block.height' fill="#ccc"/>
-
-                                        <rect v-if="showRepeats" v-for="child in block.children" rx="2" ry="2" :x="child.x" :y='child.y' :width='child.width' :height='child.height' class="repeat" :style="{fill: child.label}" :key="child">
-                                            <title>{{ child.title }}</title>
-                                        </rect>
+                                    <g class="paths">
+                                        <path v-for="link in linkPaths" :d="link.path" :class="{critical: link.critical}" :key="link"/>
                                     </g>
-                                    <foreignObject>
-                                        <context-menu ref="ctxMenu">
-                                            <slot name="context-menu" :selected="localSelected">
-                                                <li @click="$emit('selected', localSelected)" class="item">
-                                                    <i class="edit icon"></i>Edit
-                                                </li>
-                                            </slot>
-                                        </context-menu>
-                                    </foreignObject>
+
+                                    <g class="blocks">
+                                        <g class="block" v-for="(block, $index) in nodes" :key="$index">
+                                            <title>{{ block.title }}</title>
+
+                                            <rect @contextmenu.prevent="openContext($event, block)" @click="select(block, $index)" @mousedown="adjustStart(block, $event)" rx="2" ry="2" :x="block.x" :y='block.y' :width='block.width' :height='block.height' :class="{editable: !readOnly && !block.readOnly}" :style="{fill: block.label}">
+                                                <title v-if="block.readOnly" >🔒{{ block.readOnly }}</title>
+                                                <title v-else>{{ block.title }}</title>
+                                            </rect>
+                                            <text v-if="block.readOnly" :x="block.x + (block.width / 2)" :y="block.y + 2 * (block.height / 3)" style="font-family: Icons" class="icon" text-anchor="middle">&#xf023;</text>
+
+                                            <rect v-if="!readOnly && !block.readOnly" class="drag-handle" @mousedown.prevent="adjustEnd(block, $event)" rx="5" ry="5" :x="block.x + block.width - 10" :y='block.y' width='10' :height='block.height' fill="#ccc"/>
+
+                                            <rect v-if="showRepeats" v-for="child in block.children" rx="2" ry="2" :x="child.x" :y='child.y' :width='child.width' :height='child.height' class="repeat" :style="{fill: child.label}" :key="child">
+                                                <title>{{ child.title }}</title>
+                                            </rect>
+                                        </g>
+                                        <foreignObject>
+                                            <context-menu ref="ctxMenu">
+                                                <slot name="context-menu" :selected="localSelected">
+                                                    <li @click="$emit('selected', localSelected)" class="item">
+                                                        <i class="edit icon"></i>Edit
+                                                    </li>
+                                                </slot>
+                                            </context-menu>
+                                        </foreignObject>
+                                    </g>
                                 </g>
                             </g>
-                        </g>
-                    </svg>
+                        </svg>
+                    </div>
                 </div>
             </div>
         </div>
@@ -166,6 +171,11 @@
                 topMargin: 20,
                 localSelected: null,
                 cloned: null,
+
+                categoryGroupings: [
+                    { title: 'foo', show: true },
+                    { title: 'bar', show: true },
+                ],
             }
         },
 
@@ -548,7 +558,6 @@
         padding-top:30px;
         overflow: hidden;
         border-right: 5px solid rgba(200, 200, 200, 1);
-        margin-top: 20px;
         min-width: 300px;
     }
     #timeline-container {
