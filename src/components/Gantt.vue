@@ -2,8 +2,8 @@
     <div>
         <div id="adpcalendar">
             <div id="timeline-sidebar">
-                <div v-for="i in categoryGroupings" :key="i" >
-                    <div :style="{height: `${topMargin}px`}" @click="i.show =! i.show">{{ i.title }}</div>
+                <div v-for="(i, index) in categoryGroupings" :key="i">
+                    <div id="category-header" @click="i.show =! i.show">{{ i.title }}</div>
                     <svg id="event-types" ref="svg" :width="titleWidth" :height='limits.height' v-if="i.show">
                         <g class="rows">
                             <rect v-for="(block, $index) in groupings" x="0" :y="blockHeight * $index" width="100%" :height="blockHeight" stroke="#f5f5f5" stroke-width="2" :key="$index"></rect>
@@ -18,23 +18,25 @@
 
             <div id="timeline-container" ref="container" @mousemove="move" @mouseup="mouseUp">
                 <div id="timeline" class="timeline" ref="timeline">
-                    <div v-for="(i, index) in categoryGroupings" :key="i">
-                        <svg ref="svg" id="timeline-events" :width="svgWidth" :height='limits.height + 21' v-if="i.show">
-                            <g>
+
+                    <div v-for="(i, index) in computedCategorys" :key="i">
+                        <div id="timeline-dates" v-if="index === 0">
+                </div>
+                        <svg ref="svg" id="timeline-events" :width="svgWidth" :height='limits.height + 35'>
+                            <g class="titles" v-if="index === 0">
+                                <g v-for="(line, $index) in gridLines" v-if="$index % smartGrids === 1" :key="$index">
+                                    <text text-anchor="middle" :x="($index - 1) * hourWidth + titleWidth" y="20">{{ line }}</text>
+                                </g>
+                                <foreignObject :x='svgWidth - 500' width="1" height="100%" v-if="inifinteScroll">
+                                    <v-waypoint @waypoint="collide" :horizontal="true"></v-waypoint>
+                                </foreignObject>
+                            </g>
+                            <g v-if="i.show">
                                 <g class="rows">
-                                    <rect v-for="(block, $index) in groupings" x="0" :y="blockHeight * $index + topMargin" width="100%" :height="blockHeight" stroke="#f5f5f5" stroke-width="2" :key="$index"></rect>
+                                    <rect v-for="(block, $index) in groupings" x="0" :y="blockHeight * $index + 35" width="100%" :height="blockHeight" stroke="#f5f5f5" stroke-width="2" :key="$index"></rect>
                                 </g>
 
                                 <g class="graph">
-                                    <g class="titles" v-if="index === 0">
-                                        <g v-for="(line, $index) in gridLines" v-if="$index % smartGrids === 1" :key="$index">
-                                            <text text-anchor="middle" :x="($index - 1) * hourWidth + titleWidth" y="10">{{ line }}</text>
-                                        </g>
-                                        <foreignObject :x='svgWidth - 500' width="1" height="100%" v-if="inifinteScroll">
-                                            <v-waypoint @waypoint="collide" :horizontal="true"></v-waypoint>
-                                        </foreignObject>
-                                    </g>
-
                                     <foreignObject width="100%" height="100%">
                                         <div class="grid-pattern" :style="gridPatternStyles"></div>
                                     </foreignObject>
@@ -71,11 +73,16 @@
                                     </g>
                                 </g>
                             </g>
+                            <rect v-else x="0" y="10" width="100%" height="35" fill="transparent"></rect>
                         </svg>
+                        <!-- <div v-else :style="{height: `${topMargin}px`}" @click="i.show =! i.show"></div> -->
                     </div>
                 </div>
             </div>
         </div>
+
+        <pre>Grouped Data:{{ computedCategorys }}</pre>
+
     </div>
 </template>
 
@@ -168,18 +175,40 @@
                 categoryWidth: 300,
 
                 titleWidth: 0,
-                topMargin: 20,
+                topMargin: 35,
                 localSelected: null,
                 cloned: null,
 
                 categoryGroupings: [
                     { title: 'foo', show: true },
                     { title: 'bar', show: true },
+                    // { title: 'baz', show: true },
+                    // { title: 'qux', show: true },
                 ],
             }
         },
 
         computed: {
+            groupByData() {
+                // reduce - accumulator, currentValue, currentIndex, array
+                const test = this.nodes.reduce((grouped, item, i, array, sortKey = item.group_by) => {
+                    grouped[sortKey] = grouped[sortKey] || []
+                    grouped[sortKey].push(item)
+                    return grouped
+                }, {})
+                console.log('grouped-data', test)
+                return test
+            },
+
+            computedCategorys() {
+                const groupedByData = this.categoryGroupings.filter(((c) => {
+                    c.events = this.groupByData[c.title]
+                    return c
+                }))
+                console.log('compCats', groupedByData)
+                return groupedByData
+            },
+
             svgWidth() {
                 // if (!this.calculate) return 0
 
@@ -365,7 +394,7 @@
 
             gridPatternStyles() {
                 return {
-                    marginTop: '20px',
+                    marginTop: '35px',
                     marginLeft: `${this.titleWidth}px`,
                     height: `${this.limits.height}px`,
                     backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='${this.scaleWidth * 7}' height='100' viewBox='0 0 ${this.scaleWidth * 7} 100'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.4'%3E%3Cpath opacity='.5' d='M0 0 H 5 V 100 H 0 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
@@ -555,14 +584,21 @@
     }
 
     #timeline-sidebar {
-        padding-top:30px;
+        padding-top:0px;
         overflow: hidden;
         border-right: 5px solid rgba(200, 200, 200, 1);
         min-width: 300px;
     }
     #timeline-container {
         overflow-x: auto;
-        margin-top: 30px;
+        margin-top: 0;
+    }
+
+    #timeline-dates {
+        // position: relative;
+        // top: 21px;
+        // height: 21px;
+        display: flex;
     }
 
     #timeline {
@@ -576,7 +612,7 @@
     }
     #timeline-content {
         flex: 1 1 auto;
-        overflow:auto;
+        overflow: auto;
     }
     #timeline-events {
         overflow: visible;
@@ -590,6 +626,17 @@
         margin-top: -20px;
         margin-bottom: 20px;
         display: flex;
+    }
+
+    #category-header {
+        border: solid;
+        border-color: whitesmoke;
+        border-width: 1px;
+        border-bottom: 0;
+        height: 34px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     .grid-pattern {

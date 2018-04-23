@@ -49,6 +49,7 @@ export default {
                     x: 0,
                     width: 0,
                     readOnly: true,
+                    group_by: 'foo',
                 },
                 {
                     title: 'A New Event',
@@ -61,6 +62,7 @@ export default {
                     status: 'in_progress',
                     x: 0,
                     width: 0,
+                    group_by: 'foo',
                 },
                 {
                     title: 'Dependent Event',
@@ -73,6 +75,7 @@ export default {
                     status: 'active',
                     x: 0,
                     width: 0,
+                    group_by: 'bar',
                 },
                 {
                     title: 'Another Event',
@@ -85,6 +88,7 @@ export default {
                     status: 'active',
                     x: 0,
                     width: 0,
+                    group_by: 'bar',
                 },
             ],
         }
