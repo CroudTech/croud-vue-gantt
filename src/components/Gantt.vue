@@ -46,7 +46,7 @@
                                     </g>
 
                                     <g class="blocks">
-                                        <g class="block" v-for="(block, $index) in nodes" :key="$index">
+                                        <g class="block" v-for="(block, $index) in i.events" :key="$index">
                                             <title>{{ block.title }}</title>
 
                                             <rect @contextmenu.prevent="openContext($event, block)" @click="select(block, $index)" @mousedown="adjustStart(block, $event)" rx="2" ry="2" :x="block.x" :y='block.y' :width='block.width' :height='block.height' :class="{editable: !readOnly && !block.readOnly}" :style="{fill: block.label}">
