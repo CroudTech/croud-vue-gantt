@@ -2,13 +2,13 @@
     <div>
         <div id="adpcalendar">
             <div id="timeline-sidebar">
-                <div v-for="(i, index) in categoryGroupings" :key="i">
+                <div v-for="(i, index) in groupByData" :key="index">
                     <div id="category-header" @click="i.show =! i.show">{{ i.title }}</div>
-                    <svg id="event-types" ref="svg" :width="titleWidth" :height='limits.height' v-if="i.show">
+                    <svg id="event-types" ref="svg" :width="titleWidth" :height='i.height' v-if="i.show">
                         <g class="rows">
-                            <rect v-for="(block, $index) in groupings" x="0" :y="blockHeight * $index" width="100%" :height="blockHeight" stroke="#f5f5f5" stroke-width="2" :key="$index"></rect>
+                            <rect v-for="(block, $index) in i.groupings" x="0" :y="blockHeight * $index" width="100%" :height="blockHeight" stroke="#f5f5f5" stroke-width="2" :key="$index"></rect>
                         </g>
-                        <g v-for="(block, $index) in groupings" :key="$index">
+                        <g v-for="(block, $index) in i.groupings" :key="$index">
                             <title>{{ block }}</title>
                             <text @click="select(block)" text-anchor="right" :x="5" :y="(blockHeight * $index) + 5 +(blockHeight / 2)">{{ block | truncate(52) }}</text>
                         </g>
@@ -19,10 +19,9 @@
             <div id="timeline-container" ref="container" @mousemove="move" @mouseup="mouseUp">
                 <div id="timeline" class="timeline" ref="timeline">
 
-                    <div v-for="(i, index) in computedCategorys" :key="i">
-                        <div id="timeline-dates" v-if="index === 0">
-                </div>
-                        <svg ref="svg" id="timeline-events" :width="svgWidth" :height='limits.height + 35'>
+                    <div v-for="(i, index) in groupByData" :key="index">
+                        <div id="timeline-dates" v-if="index === 0"></div>
+                        <svg ref="svg" id="timeline-events" :width="svgWidth" :height="i.show ? i.height + 35 : 0">
                             <g class="titles" v-if="index === 0">
                                 <g v-for="(line, $index) in gridLines" v-if="$index % smartGrids === 1" :key="$index">
                                     <text text-anchor="middle" :x="($index - 1) * hourWidth + titleWidth" y="20">{{ line }}</text>
@@ -33,7 +32,7 @@
                             </g>
                             <g v-if="i.show">
                                 <g class="rows">
-                                    <rect v-for="(block, $index) in groupings" x="0" :y="blockHeight * $index + 35" width="100%" :height="blockHeight" stroke="#f5f5f5" stroke-width="2" :key="$index"></rect>
+                                    <rect v-for="(block, $index) in i.groupings" x="0" :y="blockHeight * $index + 35" width="100%" :height="blockHeight" stroke="#f5f5f5" stroke-width="2" :key="$index"></rect>
                                 </g>
 
                                 <g class="graph">
@@ -46,7 +45,7 @@
                                     </g>
 
                                     <g class="blocks">
-                                        <g class="block" v-for="(block, $index) in i.events" :key="$index">
+                                        <g class="block" v-for="(block, $index) in i.blocks" :key="$index">
                                             <title>{{ block.title }}</title>
 
                                             <rect @contextmenu.prevent="openContext($event, block)" @click="select(block, $index)" @mousedown="adjustStart(block, $event)" rx="2" ry="2" :x="block.x" :y='block.y' :width='block.width' :height='block.height' :class="{editable: !readOnly && !block.readOnly}" :style="{fill: block.label}">
@@ -80,9 +79,6 @@
                 </div>
             </div>
         </div>
-
-        <pre>Grouped Data:{{ computedCategorys }}</pre>
-
     </div>
 </template>
 
@@ -149,6 +145,11 @@
                 type: Boolean,
                 default: false,
             },
+
+            categoryGroupings: {
+                type: [Boolean, Object],
+                default: false,
+            },
         },
 
         components: {
@@ -178,37 +179,11 @@
                 topMargin: 35,
                 localSelected: null,
                 cloned: null,
-
-                categoryGroupings: [
-                    { title: 'foo', show: true },
-                    { title: 'bar', show: true },
-                    // { title: 'baz', show: true },
-                    // { title: 'qux', show: true },
-                ],
+                groupByData: {},
             }
         },
 
         computed: {
-            groupByData() {
-                // reduce - accumulator, currentValue, currentIndex, array
-                const test = this.nodes.reduce((grouped, item, i, array, sortKey = item.group_by) => {
-                    grouped[sortKey] = grouped[sortKey] || []
-                    grouped[sortKey].push(item)
-                    return grouped
-                }, {})
-                console.log('grouped-data', test)
-                return test
-            },
-
-            computedCategorys() {
-                const groupedByData = this.categoryGroupings.filter(((c) => {
-                    c.events = this.groupByData[c.title]
-                    return c
-                }))
-                console.log('compCats', groupedByData)
-                return groupedByData
-            },
-
             svgWidth() {
                 // if (!this.calculate) return 0
 
@@ -412,6 +387,42 @@
         },
 
         methods: {
+            buildGroupByData() {
+                const position = this.calculate ? this.calculatedPosition : this.position
+                const titleGroupings = { misc: [] }
+
+                const startObj = this.categoryGroupings && this.categoryGroupings !== true ? this.categoryGroupings : { misc: [] }
+                const test = this.nodes.reduce((grouped, item, i, array, sortKey = item.group_by) => {
+                    if (this.categoryGroupings === true && sortKey) {
+                        grouped[sortKey] = grouped[sortKey] || []
+                    }
+
+                    const computedSortKey = grouped[sortKey] ? sortKey : 'misc'
+                    grouped[computedSortKey].push(item)
+
+                    titleGroupings[computedSortKey] = titleGroupings[computedSortKey] || []
+
+                    let index = titleGroupings[computedSortKey].indexOf(item.title.toLowerCase())
+                    if (index === -1) {
+                        index = titleGroupings[computedSortKey].length
+                        titleGroupings[computedSortKey].push(item.title.toLowerCase())
+                    }
+                    item.event_index = this.grouping ? index : i
+
+                    position(item)
+
+                    return grouped
+                }, startObj)
+
+                this.groupByData = Object.keys(test).map(group => ({
+                    title: group,
+                    blocks: test[group],
+                    groupings: titleGroupings[group],
+                    show: true,
+                    height: titleGroupings[group].length * (this.blockHeight),
+                }))
+            },
+
             openContext(e, block) {
                 this.localSelected = block
                 this.$refs.ctxMenu.open({
@@ -533,6 +544,14 @@
                 }
                 return eventList
             },
+        },
+
+        mounted() {
+            this.buildGroupByData()
+        },
+
+        watch: {
+            nodes: 'buildGroupByData',
         },
     }
 </script>
