@@ -49,7 +49,7 @@ export default {
                     x: 0,
                     width: 0,
                     readOnly: true,
-                    group_by: 'foo',
+                    group_by: '',
                 },
                 {
                     title: 'A New Event',
@@ -71,7 +71,7 @@ export default {
                     frequency: {
                         key: 'weekly',
                     },
-                    dependencies: [0, 1],
+                    dependencies: [], // [0, 1],
                     status: 'active',
                     x: 0,
                     width: 0,
