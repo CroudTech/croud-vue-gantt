@@ -4,7 +4,8 @@
         complete: '#8bccba',
         active: '#6bc2e2',
         in_progress: '#fbbd08',
-    }" :readOnly="false">
+    }" :readOnly="false"
+    :category-groupings="true">
         <template slot="context-menu" scope="scope">
             <li @click="selected(scope.selected)" class="item">
                 <i class="edit icon"></i>View
