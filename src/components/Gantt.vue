@@ -87,7 +87,7 @@
                                 </g>
                             </g>
                         </svg>
-                        <!-- <div v-else :style="{height: `${topMargin}px`}" @click="i.show =! i.show"></div> -->
+                        <div v-else id="closed-bar" :style="{width: `${svgWidth}px`, height: `${topMargin - 1}px`}" @click="i.show = !i.show"></div>
                     </div>
                 </div>
             </div>
