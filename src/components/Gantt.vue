@@ -2,8 +2,12 @@
     <div>
         <div id="adpcalendar">
             <div id="timeline-sidebar">
-                <div v-for="(i, index) in groupByData" :key="index">
-                    <div id="category-header" @click="i.show =! i.show">{{ i.title }}</div>
+                <div v-for="(i, index) in groupByData" :key="index" :style="{height: `${i.show ? i.height + blockHeight : blockHeight}px`}">
+                    <div id="category-header" @click="i.show =! i.show">
+                        <div class="title">{{ i.title }}</div>
+                        <div v-if="i.show" class="carret">&#9660;</div>
+                        <div v-else class="carret">&#9650;</div>
+                    </div>
                     <svg id="event-types" ref="svg" :width="titleWidth" :height='i.height' v-if="i.show">
                         <g class="rows">
                             <rect v-for="(block, $index) in i.groupings" x="0" :y="blockHeight * $index" width="100%" :height="blockHeight" stroke="#f5f5f5" stroke-width="2" :key="$index"></rect>
