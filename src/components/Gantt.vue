@@ -27,14 +27,14 @@
                             <g>
                                 <g>
                                     <g class="titles">
-                                <g v-for="(line, $index) in gridLines" v-if="$index % smartGrids === 1" :key="$index">
+                                        <g v-for="(line, $index) in gridLines" v-if="$index % smartGrids === 1" :key="$index">
                                             <text text-anchor="middle" :x="($index - 1) * hourWidth + titleWidth" y="10">{{ line }}</text>
-                                </g>
+                                        </g>
 
-                                <foreignObject :x='svgWidth - 500' width="1" height="100%" v-if="inifinteScroll">
-                                    <v-waypoint @waypoint="collide" :horizontal="true"></v-waypoint>
-                                </foreignObject>
-                            </g>
+                                        <foreignObject :x='svgWidth - 500' width="1" height="100%" v-if="inifinteScroll">
+                                            <v-waypoint @waypoint="collide" :horizontal="true"></v-waypoint>
+                                        </foreignObject>
+                                    </g>
                                 </g>
                             </g>
                     </svg>
@@ -616,26 +616,32 @@
     }
 
     #timeline-sidebar {
-        padding-top:0px;
+        padding-top: 35px;
         overflow: hidden;
         border-right: 5px solid rgba(200, 200, 200, 1);
         min-width: 300px;
     }
+
     #timeline-container {
         overflow-x: auto;
         margin-top: 0;
     }
 
     #timeline-dates {
-        // position: relative;
-        // top: 21px;
-        // height: 21px;
         display: flex;
+        margin-top: 12px;
+
+        svg {
+            border-bottom: solid;
+            border-width: 1px;
+            border-bottom-color: #eceaef;
+        }
     }
 
     #timeline {
         width: 100%;
         display: block;
+        padding-bottom: 10px;
         overflow-x: scroll;
     }
     #event-types {
@@ -661,14 +667,29 @@
     }
 
     #category-header {
-        border: solid;
-        border-color: whitesmoke;
-        border-width: 1px;
-        border-bottom: 0;
         height: 34px;
         display: flex;
         align-items: center;
         justify-content: center;
+        font-weight: bold;
+        text-transform: capitalize;
+        border-bottom: solid 1px #eceaef;
+        cursor: pointer;
+
+        .title {
+            width: 90%;
+        }
+
+        .carret {
+            font-size: 0.9rem;
+            width: 10%;
+            transform: scale(1.4,-0.8);
+        }
+    }
+
+    #closed-bar{
+        background-color: #f5f5f5;
+        border-bottom: solid 1px #eceaef;
     }
 
     .grid-pattern {
