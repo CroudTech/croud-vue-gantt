@@ -28,7 +28,7 @@
                                 <g>
                                     <g class="titles">
                                 <g v-for="(line, $index) in gridLines" v-if="$index % smartGrids === 1" :key="$index">
-                                    <text text-anchor="middle" :x="($index - 1) * hourWidth + titleWidth" y="20">{{ line }}</text>
+                                            <text text-anchor="middle" :x="($index - 1) * hourWidth + titleWidth" y="10">{{ line }}</text>
                                 </g>
 
                                 <foreignObject :x='svgWidth - 500' width="1" height="100%" v-if="inifinteScroll">
@@ -46,7 +46,7 @@
                                     <rect @click="i.show = false" x="0" :y="0" width="100%" fill="transparent" :height="blockHeight"></rect>
                                 </g>
                                 <g class="rows">
-                                    <rect v-for="(block, $index) in i.groupings" x="0" :y="blockHeight * $index + 35" width="100%" :height="blockHeight" stroke="#f5f5f5" stroke-width="2" :key="$index"></rect>
+                                    <rect v-for="(block, $index) in i.groupings" x="0" :y="blockHeight * $index + blockHeight" width="100%" :height="blockHeight" stroke="#f5f5f5" stroke-width="2" :key="$index"></rect>
                                 </g>
 
                                 <g class="graph">
@@ -86,7 +86,6 @@
                                     </g>
                                 </g>
                             </g>
-                            <rect v-else x="0" y="10" width="100%" height="35" fill="transparent"></rect>
                         </svg>
                         <!-- <div v-else :style="{height: `${topMargin}px`}" @click="i.show =! i.show"></div> -->
                     </div>
