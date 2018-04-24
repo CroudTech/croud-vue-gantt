@@ -395,7 +395,7 @@
                 const position = this.calculate ? this.calculatedPosition : this.position
                 const titleGroupings = { misc: [] }
 
-                const startObj = this.categoryGroupings && this.categoryGroupings !== true ? this.categoryGroupings : { misc: [] }
+                const startObj = this.categoryGroupings !== true ? this.categoryGroupings : { misc: [] }
                 const test = this.nodes.reduce((grouped, item, i, array, sortKey = item.group_by) => {
                     if (this.categoryGroupings === true && sortKey) {
                         grouped[sortKey] = grouped[sortKey] || []
