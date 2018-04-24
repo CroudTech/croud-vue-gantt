@@ -405,7 +405,7 @@
                 const titleGroupings = { misc: [] }
 
                 const startObj = this.categoryGroupings !== true ? this.categoryGroupings : { misc: [] }
-                const test = this.nodes.reduce((grouped, item, i, array, sortKey = item.group_by) => {
+                const processNodes = this.nodes.reduce((grouped, item, i, array, sortKey = item.group_by) => {
                     if (this.categoryGroupings === true && sortKey) {
                         grouped[sortKey] = grouped[sortKey] || []
                     }
@@ -427,9 +427,9 @@
                     return grouped
                 }, startObj)
 
-                this.groupByData = Object.keys(test).map(group => ({
+                this.groupByData = Object.keys(processNodes).map(group => ({
                     title: group,
-                    blocks: test[group],
+                    blocks: processNodes[group],
                     groupings: titleGroupings[group],
                     show: true,
                     height: titleGroupings[group].length * (this.blockHeight),
