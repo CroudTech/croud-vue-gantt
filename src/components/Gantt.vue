@@ -192,7 +192,7 @@
                 topMargin: 35,
                 localSelected: null,
                 cloned: null,
-                groupByData: {},
+                groupByData: [],
             }
         },
 
