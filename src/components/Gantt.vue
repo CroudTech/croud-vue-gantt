@@ -427,11 +427,13 @@
                     return grouped
                 }, startObj)
 
+                const clonedGroupByData = _.cloneDeep(this.groupByData)
+
                 this.groupByData = Object.keys(processNodes).map(group => ({
                     title: group,
                     blocks: processNodes[group],
                     groupings: titleGroupings[group],
-                    show: true,
+                    show: clonedGroupByData.length && clonedGroupByData.map(g => g.title).indexOf(group) ? clonedGroupByData[clonedGroupByData.map(g => g.title).indexOf(group)].show : true,
                     height: titleGroupings[group].length * (this.blockHeight),
                 }))
             },
