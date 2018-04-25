@@ -433,7 +433,7 @@
                     title: group,
                     blocks: processNodes[group],
                     groupings: titleGroupings[group],
-                    show: clonedGroupByData.length && clonedGroupByData.map(g => g.title).indexOf(group) ? clonedGroupByData[clonedGroupByData.map(g => g.title).indexOf(group)].show : true,
+                    show: clonedGroupByData.length && clonedGroupByData.map(g => g.title).indexOf(group) > -1 ? clonedGroupByData[clonedGroupByData.map(g => g.title).indexOf(group)].show : true,
                     height: titleGroupings[group].length * (this.blockHeight),
                 }))
             },
