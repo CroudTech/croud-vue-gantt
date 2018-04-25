@@ -4,7 +4,7 @@
             <div id="timeline-sidebar">
                 <div v-for="(i, index) in groupByData" :key="index" :style="{height: `${i.show ? i.height + blockHeight : blockHeight}px`}">
                     <div id="category-header" @click="i.show =! i.show">
-                        <div class="title">{{ i.title }}</div>
+                        <div class="title">{{ i.title }} ({{ i.blocks.length }})</div>
                         <div v-if="i.show" class="carret">&#9660;</div>
                         <div v-else class="carret">&#9650;</div>
                     </div>
@@ -14,7 +14,7 @@
                         </g>
                         <g v-for="(block, $index) in i.groupings" :key="$index">
                             <title>{{ block }}</title>
-                            <text @click="select(block)" text-anchor="right" :x="5" :y="(blockHeight * $index) + 5 +(blockHeight / 2)">{{ block | truncate(52) }}</text>
+                            <text @click="select(block)" text-anchor="right" :x="15" :y="(blockHeight * $index) + 5 +(blockHeight / 2)">{{ block | truncate(52) }}</text>
                         </g>
                     </svg>
                 </div>
@@ -679,6 +679,7 @@
         cursor: pointer;
 
         .title {
+            padding: 0 0 0 10px;
             width: 90%;
         }
 
