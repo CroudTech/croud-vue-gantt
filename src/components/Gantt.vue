@@ -97,7 +97,7 @@
 
 <script>
     import moment from 'moment'
-    import _ from 'lodash'
+    import { cloneDeep } from 'lodash'
     import contextMenu from 'vue-context-menu'
 
     export default {
@@ -427,7 +427,7 @@
                     return grouped
                 }, startObj)
 
-                const clonedGroupByData = _.cloneDeep(this.groupByData)
+                const clonedGroupByData = cloneDeep(this.groupByData)
 
                 this.groupByData = Object.keys(processNodes).map(group => ({
                     title: group,
@@ -480,7 +480,7 @@
                 this.startMouse = evt
                 this.dragging = 'start'
                 this.localSelected = block
-                this.cloned = _.cloneDeep(this.localSelected)
+                this.cloned = cloneDeep(this.localSelected)
             },
 
             adjustEnd(block, evt) {
@@ -488,7 +488,7 @@
                 this.startMouse = evt
                 this.dragging = 'end'
                 this.localSelected = block
-                this.cloned = _.cloneDeep(this.localSelected)
+                this.cloned = cloneDeep(this.localSelected)
             },
 
             // move: _.debounce(function (evt) {
