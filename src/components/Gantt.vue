@@ -411,7 +411,9 @@
                     }
 
                     const computedSortKey = grouped[sortKey] ? sortKey : 'misc'
-                    grouped[computedSortKey].push(item)
+
+                    const group = grouped[computedSortKey]
+                    if (group.indexOf(item) === -1) group.push(item)
 
                     titleGroupings[computedSortKey] = titleGroupings[computedSortKey] || []
 
