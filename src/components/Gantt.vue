@@ -568,7 +568,7 @@
         },
 
         watch: {
-            nodes: 'buildGroupByData',
+            groupings: 'buildGroupByData',
         },
     }
 </script>
@@ -695,7 +695,7 @@
 
             &.collapsed {
                 transform: translateX(-2.5px) translateY(-4px) scale(1.8, 1);
-        }
+            }
         }
     }
 
