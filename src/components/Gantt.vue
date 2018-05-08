@@ -6,7 +6,7 @@
                     <div id="category-header" @click="i.show =! i.show">
                         <div class="title">{{ i.title }} ({{ i.blocks.length }})</div>
                         <div v-if="i.show" class="carret">&rsaquo;</div>
-                        <div v-else class="carret-collapsed">&rsaquo;</div>
+                        <div v-else class="carret collapsed">&rsaquo;</div>
                     </div>
                     <svg id="event-types" ref="svg" :width="titleWidth" :height='i.height' v-if="i.show">
                         <g class="rows">
@@ -688,15 +688,14 @@
 
         .carret {
             font-size: 2rem;
+            color: #666666;
             width: 10%;
-            transform: scale(1, 1.4) rotate(90deg);
+            transform: scale(1, 1.8) rotate(90deg);
+            text-align: center;
+
+            &.collapsed {
+                transform: translateX(-2.5px) translateY(-4px) scale(1.8, 1);
         }
-
-        .carret-collapsed {
-            font-size: 2rem;
-            width: 10%;
-            transform: translateX(-1.5px) scale(1.4, 1);
-
         }
     }
 
