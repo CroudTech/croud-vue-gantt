@@ -683,12 +683,20 @@
         .title {
             padding: 0 0 0 10px;
             width: 90%;
+            text-align: left;
         }
 
         .carret {
-            font-size: 0.9rem;
+            font-size: 2rem;
             width: 10%;
-            transform: scale(1.4,-0.8);
+            transform: scale(1, 1.4) rotate(90deg);
+        }
+
+        .carret-collapsed {
+            font-size: 2rem;
+            width: 10%;
+            transform: translateX(-1.5px) scale(1.4, 1);
+
         }
     }
 
