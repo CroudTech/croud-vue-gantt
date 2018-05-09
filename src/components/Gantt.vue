@@ -45,7 +45,7 @@
                         <svg ref="svg" id="timeline-events" :width="svgWidth" :height="i.show ? i.height + blockHeight : 0"  v-if="i.show">
                             <g>
                                 <g>
-                                    <rect @click="i.show = false" x="0" :y="0" width="100%" fill="transparent" :height="blockHeight"></rect>
+                                    <rect @click="i.show = false" x="0" :y="0" width="100%" fill="transparent" :height="blockHeight" stroke="#eceaef" stroke-width="2"></rect>
                                 </g>
                                 <g class="rows">
                                     <rect v-for="(block, $index) in i.groupings" x="0" :y="blockHeight * $index + blockHeight" width="100%" :height="blockHeight" stroke="#f5f5f5" stroke-width="2" :key="$index"></rect>
@@ -89,7 +89,7 @@
                                 </g>
                             </g>
                         </svg>
-                        <div v-else id="closed-bar" :style="{width: `${svgWidth}px`, height: `${topMargin - 1}px`}" @click="i.show = !i.show"></div>
+                        <div v-else id="closed-bar" :style="{width: `${svgWidth}px`, height: `${topMargin}px`}" @click="i.show = !i.show"></div>
                     </div>
                 </div>
             </div>
@@ -635,13 +635,7 @@
 
     #timeline-dates {
         display: flex;
-        margin-top: 12px;
-
-        svg {
-            border-bottom: solid;
-            border-width: 1px;
-            border-bottom-color: #eceaef;
-        }
+        margin-top: 13px;
     }
 
     #timeline {
@@ -673,13 +667,13 @@
     }
 
     #category-header {
-        height: 34px;
+        height: 35px;
         display: flex;
         align-items: center;
         justify-content: center;
         font-weight: bold;
         text-transform: capitalize;
-        border-bottom: solid 1px #eceaef;
+        border: solid 1px #eceaef;
         cursor: pointer;
 
         .title {
@@ -703,7 +697,7 @@
 
     #closed-bar{
         background-color: #f5f5f5;
-        border-bottom: solid 1px #eceaef;
+        border: solid 1px #eceaef;
     }
 
     .grid-pattern {
