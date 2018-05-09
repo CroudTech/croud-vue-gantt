@@ -4,10 +4,10 @@
             <div id="timeline-sidebar">
                 <div v-for="(i, index) in groupByData" :key="index" :style="{height: `${i.show ? i.height + blockHeight : blockHeight}px`}">
                     <slot name="category-header" :data="i">
-                        <div id="category-header" @click="i.show =! i.show">
+                        <div class="category-header" :style="{'height': `${blockHeight}px`}" @click="i.show =! i.show">
                             <div class="title">{{ i.title }} ({{ i.blocks.length }})</div>
-                            <div v-if="i.show" class="caret">&rsaquo;</div>
-                            <div v-else class="caret collapsed">&rsaquo;</div>
+                            <div v-if="i.show" class="caret collapsed">&rsaquo;</div>
+                            <div v-else class="caret">&rsaquo;</div>
                         </div>
                     </slot>
                     <svg id="event-types" ref="svg" :width="titleWidth" :height='i.height' v-if="i.show">
@@ -89,7 +89,7 @@
                                 </g>
                             </g>
                         </svg>
-                        <div v-else id="closed-bar" :style="{width: `${svgWidth}px`, height: `${topMargin}px`}" @click="i.show = !i.show"></div>
+                        <div v-else class="closed-bar" :style="{width: `${svgWidth}px`, height: `${blockHeight}px`}" @click="i.show = !i.show"></div>
                     </div>
                 </div>
             </div>
@@ -384,7 +384,7 @@
 
             gridPatternStyles() {
                 return {
-                    marginTop: '35px',
+                    marginTop: `${this.topMargin}px`,
                     marginLeft: `${this.titleWidth}px`,
                     height: `${this.limits.height}px`,
                     backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='${this.scaleWidth * 7}' height='100' viewBox='0 0 ${this.scaleWidth * 7} 100'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.4'%3E%3Cpath opacity='.5' d='M0 0 H 5 V 100 H 0 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
@@ -666,8 +666,7 @@
         display: flex;
     }
 
-    #category-header {
-        height: 35px;
+    .category-header {
         display: flex;
         align-items: center;
         justify-content: center;
@@ -686,16 +685,19 @@
             font-size: 2rem;
             color: #666666;
             width: 10%;
-            transform: scale(1, 1.8) rotate(90deg);
-            text-align: center;
+            display: flex;
+            justify-content: center;
+            padding: 0 2px 3px 0;
+            transform: scale(1, 1.3);
 
             &.collapsed {
-                transform: translateX(-2.5px) translateY(-4px) scale(1.8, 1);
+                padding: 0;
+                transform: scale(1.3, 1) rotate(90deg);
             }
         }
     }
 
-    #closed-bar{
+    .closed-bar {
         background-color: #f5f5f5;
         border: solid 1px #eceaef;
     }
