@@ -3,10 +3,10 @@
         <div id="adpcalendar">
             <div id="timeline-sidebar">
                 <div v-for="(i, index) in groupByData" :key="index" :style="{height: `${i.show ? i.height + blockHeight : blockHeight}px`}">
-                    <div id="category-header" @click="i.show =! i.show">
+                    <div id="category-header" slot="category-header" @click="i.show =! i.show">
                         <div class="title">{{ i.title }} ({{ i.blocks.length }})</div>
-                        <div v-if="i.show" class="carret">&rsaquo;</div>
-                        <div v-else class="carret collapsed">&rsaquo;</div>
+                        <div v-if="i.show" class="caret">&rsaquo;</div>
+                        <div v-else class="caret collapsed">&rsaquo;</div>
                     </div>
                     <svg id="event-types" ref="svg" :width="titleWidth" :height='i.height' v-if="i.show">
                         <g class="rows">
@@ -686,7 +686,7 @@
             text-align: left;
         }
 
-        .carret {
+        .caret {
             font-size: 2rem;
             color: #666666;
             width: 10%;
