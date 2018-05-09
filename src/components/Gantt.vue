@@ -3,11 +3,13 @@
         <div id="adpcalendar">
             <div id="timeline-sidebar">
                 <div v-for="(i, index) in groupByData" :key="index" :style="{height: `${i.show ? i.height + blockHeight : blockHeight}px`}">
-                    <div id="category-header" slot="category-header" :data="i" @click="i.show =! i.show">
-                        <div class="title">{{ i.title }} ({{ i.blocks.length }})</div>
-                        <div v-if="i.show" class="caret">&rsaquo;</div>
-                        <div v-else class="caret collapsed">&rsaquo;</div>
-                    </div>
+                    <slot name="category-header" :data="i">
+                        <div id="category-header" @click="i.show =! i.show">
+                            <div class="title">{{ i.title }} ({{ i.blocks.length }})</div>
+                            <div v-if="i.show" class="caret">&rsaquo;</div>
+                            <div v-else class="caret collapsed">&rsaquo;</div>
+                        </div>
+                    </slot>
                     <svg id="event-types" ref="svg" :width="titleWidth" :height='i.height' v-if="i.show">
                         <g class="rows">
                             <rect v-for="(block, $index) in i.groupings" x="0" :y="blockHeight * $index" width="100%" :height="blockHeight" stroke="#f5f5f5" stroke-width="2" :key="$index"></rect>
