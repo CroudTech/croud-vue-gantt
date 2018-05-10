@@ -580,8 +580,14 @@
 </script>
 
 <style lang="scss" scoped>
+    $header-border-size: 1px;
+    $header-border-colour: #eceaef;
+    $header-caret-colour: #666666;
+    $row-border: solid $header-border-size $header-border-colour;
+    $white: #ffffff;
+
     .rows rect {
-        fill: #fff;
+        fill: $white
     }
     .rows rect:nth-child(even) {
         fill: #f5f5f5;
@@ -673,25 +679,23 @@
     .category-header {
         display: flex;
         align-items: center;
-        justify-content: center;
-        font-weight: bold;
+
+        border: $row-border;
+        padding: 0 10px;
+
+        font-weight: 800;
         text-transform: capitalize;
-        border: solid 1px #eceaef;
+
         cursor: pointer;
 
         .title {
-            padding: 0 0 0 10px;
-            width: 90%;
-            text-align: left;
+            flex-grow: 1;
         }
 
         .caret {
+            flex-grow: 0;
             font-size: 2rem;
-            color: #666666;
-            width: 10%;
-            display: flex;
-            justify-content: center;
-            padding: 0 2px 3px 0;
+            color: $header-caret-colour;
             transform: scale(1, 1.3);
 
             &.collapsed {
@@ -701,9 +705,9 @@
         }
     }
 
-    .closed-bar {
+     .closed-bar {
         background-color: #f5f5f5;
-        border: solid 1px #eceaef;
+        border:  $row-border;
     }
 
     .grid-pattern {
@@ -712,7 +716,7 @@
 
     text.icon {
         font-family: Icons;
-        color: white;
+        color: $white;
         text-shadow: 0 0 1px rgba(0,0,0,0.5);
     }
 
