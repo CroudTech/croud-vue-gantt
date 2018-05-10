@@ -3,13 +3,15 @@
         <div id="adpcalendar">
             <div id="timeline-sidebar">
                 <div v-for="(i, index) in groupByData" :key="index" :style="{height: `${i.show ? i.height + blockHeight : blockHeight}px`}">
-                    <slot name="category-header" :data="i">
-                        <div class="category-header" :style="{'height': `${blockHeight}px`}" @click="i.show =! i.show">
-                            <div class="title">{{ i.title }} ({{ i.blocks.length }})</div>
-                            <div v-if="i.show" class="caret collapsed">&rsaquo;</div>
-                            <div v-else class="caret">&rsaquo;</div>
-                        </div>
-                    </slot>
+                    <div class="category-header-wrapper">
+                        <slot name="category-header" :data="i">
+                            <div class="category-header" :style="{'height': `${blockHeight}px`}" @click="i.show =! i.show">
+                                <div class="title">{{ i.title }} ({{ i.blocks.length }})</div>
+                                <div v-if="i.show" class="caret collapsed">&rsaquo;</div>
+                                <div v-else class="caret">&rsaquo;</div>
+                            </div>
+                        </slot>
+                    </div>
                     <svg id="event-types" ref="svg" :width="titleWidth" :height='i.height' v-if="i.show">
                         <g class="rows">
                             <rect v-for="(block, $index) in i.groupings" x="0" :y="blockHeight * $index" width="100%" :height="blockHeight" stroke="#f5f5f5" stroke-width="2" :key="$index"></rect>
@@ -676,11 +678,13 @@
         display: flex;
     }
 
+    .category-header-wrapper {
+        border: $row-border;
+    }
+
     .category-header {
         display: flex;
         align-items: center;
-
-        border: $row-border;
         padding: 0 10px;
 
         font-weight: 800;
