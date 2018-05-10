@@ -428,7 +428,11 @@
 
                     position(item)
 
-                    return grouped
+                    const filteredGroups = {}
+                    Object.keys(grouped).forEach((prop) => {
+                        if (grouped[prop].length) { filteredGroups[prop] = grouped[prop] }
+                    })
+                    return filteredGroups
                 }, startObj)
 
                 const clonedGroupByData = cloneDeep(this.groupByData)
