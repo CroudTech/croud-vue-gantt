@@ -699,7 +699,6 @@
             transform: scale(1, 1.3);
 
             &.collapsed {
-                padding: 0;
                 transform: scale(1.3, 1) rotate(90deg);
             }
         }
