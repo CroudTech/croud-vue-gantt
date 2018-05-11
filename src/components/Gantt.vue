@@ -2,7 +2,7 @@
     <div>
         <div id="adpcalendar">
             <div id="timeline-sidebar">
-                <div v-for="(i, index) in groupByData" :key="index" :style="{height: `${i.show ? i.height + blockHeight : blockHeight}px`}">
+                <div v-if="categoryGroupings" v-for="(i, index) in groupByData" :key="index" :style="{height: `${i.show ? i.height + getTopMargin : getTopMargin}px`}">
                     <div class="category-header-wrapper" :style="{'height': `${blockHeight}px`}">
                         <slot name="category-header" :data="i">
                             <div class="category-header" @click="i.show = !i.show">
@@ -22,6 +22,15 @@
                         </g>
                     </svg>
                 </div>
+                <svg v-else id="event-types" ref="svg" :width="titleWidth" :height='limits.height'>
+                    <g class="rows">
+                        <rect v-for="(block, $index) in groupings" x="0" :y="blockHeight * $index" width="100%" :height="blockHeight" stroke="#f5f5f5" stroke-width="2" :key="$index"></rect>
+                    </g>
+                    <g v-for="(block, $index) in groupings" :key="$index">
+                        <title>{{ block }}</title>
+                        <text @click="select(block)" text-anchor="right" :x="5" :y="(blockHeight * $index) + 5 +(blockHeight / 2)">{{ block | truncate(52) }}</text>
+                    </g>
+                </svg>
             </div>
 
             <div id="timeline-container" ref="container" @mousemove="move" @mouseup="mouseUp">
@@ -43,14 +52,14 @@
                             </g>
                     </svg>
                 </div>
-                    <div v-for="(i, index) in groupByData" :key="index" :style="{height: `${i.show ? i.height + blockHeight : blockHeight}px`}">
-                        <svg ref="svg" id="timeline-events" :width="svgWidth" :height="i.show ? i.height + blockHeight : 0"  v-if="i.show">
+                    <div v-for="(i, index) in groupByData" :key="index" :style="{height: `${i.show ? i.height + getTopMargin : getTopMargin}px`}">
+                        <svg ref="svg" id="timeline-events" :width="svgWidth" :height="i.show ? i.height + getTopMargin : 0"  v-if="i.show">
                             <g>
                                 <g>
                                     <rect @click="i.show = false" x="0" :y="0" width="100%" fill="transparent" :height="blockHeight" stroke="#eceaef" stroke-width="2"></rect>
                                 </g>
                                 <g class="rows">
-                                    <rect v-for="(block, $index) in i.groupings" x="0" :y="blockHeight * $index + blockHeight" width="100%" :height="blockHeight" stroke="#f5f5f5" stroke-width="2" :key="$index"></rect>
+                                    <rect v-for="(block, $index) in i.groupings" x="0" :y="blockHeight * $index + getTopMargin" width="100%" :height="blockHeight" stroke="#f5f5f5" stroke-width="2" :key="$index"></rect>
                                 </g>
 
                                 <g class="graph">
@@ -63,7 +72,7 @@
                                     </g>
 
                                     <g class="blocks">
-                                        <g class="block" v-for="(block, $index) in i.blocks" :key="$index">
+                                        <g v-if="categoryGroupings" class="block" v-for="(block, $index) in i.blocks" :key="$index">
                                             <title>{{ block.title }}</title>
 
                                             <rect @contextmenu.prevent="openContext($event, block)" @click="select(block, $index)" @mousedown="adjustStart(block, $event)" rx="2" ry="2" :x="block.x" :y='block.y' :width='block.width' :height='block.height' :class="{editable: !readOnly && !block.readOnly}" :style="{fill: block.label}">
@@ -78,6 +87,23 @@
                                                 <title>{{ child.title }}</title>
                                             </rect>
                                         </g>
+
+                                        <g v-else class="block" v-for="(block, $index) in nodes" :key="$index">
+                                            <title>{{ block.title }}</title>
+
+                                            <rect @contextmenu.prevent="openContext($event, block)" @click="select(block, $index)" @mousedown="adjustStart(block, $event)" rx="2" ry="2" :x="block.x" :y='block.y' :width='block.width' :height='block.height' :class="{editable: !readOnly && !block.readOnly}" :style="{fill: block.label}">
+                                                <title v-if="block.readOnly" >🔒{{ block.readOnly }}</title>
+                                                <title v-else>{{ block.title }}</title>
+                                            </rect>
+                                            <text v-if="block.readOnly" :x="block.x + (block.width / 2)" :y="block.y + 2 * (block.height / 3)" style="font-family: Icons" class="icon" text-anchor="middle">&#xf023;</text>
+
+                                            <rect v-if="!readOnly && !block.readOnly" class="drag-handle" @mousedown.prevent="adjustEnd(block, $event)" rx="5" ry="5" :x="block.x + block.width - 10" :y='block.y' width='10' :height='block.height' fill="#ccc"/>
+
+                                            <rect v-if="showRepeats" v-for="child in block.children" rx="2" ry="2" :x="child.x" :y='child.y' :width='child.width' :height='child.height' class="repeat" :style="{fill: child.label}" :key="child">
+                                                <title>{{ child.title }}</title>
+                                            </rect>
+                                        </g>
+
                                         <foreignObject>
                                             <context-menu ref="ctxMenu">
                                                 <slot name="context-menu" :selected="localSelected">
@@ -390,7 +416,7 @@
 
             gridPatternStyles() {
                 return {
-                    marginTop: `${this.topMargin}px`,
+                    marginTop: `${this.getTopMargin}px`,
                     marginLeft: `${this.titleWidth}px`,
                     height: `${this.limits.height}px`,
                     backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='${this.scaleWidth * 7}' height='100' viewBox='0 0 ${this.scaleWidth * 7} 100'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.4'%3E%3Cpath opacity='.5' d='M0 0 H 5 V 100 H 0 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
@@ -477,7 +503,7 @@
                 event.x = (((event.offset + this.globalOffset) + ((event.page - 1) * 30)) * this.scaleWidth) + this.titleWidth
                 event.width = event.duration * this.scaleWidth
                 event.height = this.blockHeight - 15
-                event.y = (event.event_index * this.blockHeight) + 7.5 + this.topMargin
+                event.y = (event.event_index * this.blockHeight) + 7.5 + this.getTopMargin
                 return event
             },
 
