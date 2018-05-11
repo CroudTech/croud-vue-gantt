@@ -462,8 +462,12 @@
 
                     const filteredGroups = {}
                     Object.keys(grouped).forEach((prop) => {
-                        if (grouped[prop].length) { filteredGroups[prop] = grouped[prop] }
+                        if (prop !== 'misc' && grouped[prop].length) { filteredGroups[prop] = grouped[prop] }
                     })
+
+                    if (!grouped.misc) return filteredGroups
+
+                    filteredGroups.misc = grouped.misc
                     return filteredGroups
                 }, startObj)
 
