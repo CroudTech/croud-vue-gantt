@@ -384,6 +384,10 @@
                 return masterEvents
             },
 
+            getTopMargin() {
+                return this.categoryGroupings ? this.topMargin : 0
+            },
+
             gridPatternStyles() {
                 return {
                     marginTop: `${this.topMargin}px`,
