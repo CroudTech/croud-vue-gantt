@@ -3,9 +3,9 @@
         <div id="adpcalendar">
             <div id="timeline-sidebar">
                 <div v-for="(i, index) in groupByData" :key="index" :style="{height: `${i.show ? i.height + blockHeight : blockHeight}px`}">
-                    <div class="category-header-wrapper">
+                    <div class="category-header-wrapper" :style="{'height': `${blockHeight}px`}">
                         <slot name="category-header" :data="i">
-                            <div class="category-header" :style="{'height': `${blockHeight}px`}" @click="i.show =! i.show">
+                            <div class="category-header" @click="i.show = !i.show">
                                 <div class="title">{{ i.title }} ({{ i.blocks.length }})</div>
                                 <div v-if="i.show" class="caret collapsed">&rsaquo;</div>
                                 <div v-else class="caret">&rsaquo;</div>
