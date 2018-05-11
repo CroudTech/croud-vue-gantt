@@ -679,6 +679,9 @@
     }
 
     .category-header-wrapper {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
         border: $row-border;
     }
 
