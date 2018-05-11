@@ -465,7 +465,7 @@
                         if (prop !== 'misc' && grouped[prop].length) { filteredGroups[prop] = grouped[prop] }
                     })
 
-                    if (!grouped.misc) return filteredGroups
+                    if (!grouped.misc || (grouped.misc && !grouped.misc.length)) return filteredGroups
 
                     filteredGroups.misc = grouped.misc
                     return filteredGroups
