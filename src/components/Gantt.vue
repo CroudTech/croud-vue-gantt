@@ -359,7 +359,7 @@
                     // curr.label = preset_labels[curr.preset_id]
                     curr.label = this.statusColors[curr.status]
 
-                    if (!this.showRepeats) {
+                    if (!this.showRepeats || !curr.frequency) {
                         masterEvents.push(curr)
                         return curr
                     }
