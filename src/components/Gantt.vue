@@ -2,8 +2,8 @@
     <div>
         <div id="adpcalendar">
             <div id="timeline-sidebar">
-                <div v-if="categoryGroupings" v-for="(i, index) in groupByData" :key="index" :style="{height: `${i.show ? i.height + getTopMargin : getTopMargin}px`}">
-                    <div class="category-header-wrapper" :style="{'height': `${blockHeight}px`}">
+                <div v-for="(i, index) in groupByData" :key="index" :style="{height: `${i.show ? i.height + getTopMargin : getTopMargin}px`}">
+                    <div v-if="categoryGroupings" class="category-header-wrapper" :style="{'height': `${blockHeight}px`}">
                         <slot name="category-header" :data="i">
                             <div class="category-header" @click="i.show = !i.show">
                                 <div class="title">{{ i.title }} ({{ i.blocks.length }})</div>
@@ -22,15 +22,6 @@
                         </g>
                     </svg>
                 </div>
-                <svg v-else id="event-types" ref="svg" :width="titleWidth" :height='limits.height'>
-                    <g class="rows">
-                        <rect v-for="(block, $index) in groupings" x="0" :y="blockHeight * $index" width="100%" :height="blockHeight" stroke="#f5f5f5" stroke-width="2" :key="$index"></rect>
-                    </g>
-                    <g v-for="(block, $index) in groupings" :key="$index">
-                        <title>{{ block }}</title>
-                        <text @click="select(block)" text-anchor="right" :x="5" :y="(blockHeight * $index) + 5 +(blockHeight / 2)">{{ block | truncate(52) }}</text>
-                    </g>
-                </svg>
             </div>
 
             <div id="timeline-container" ref="container" @mousemove="move" @mouseup="mouseUp">
