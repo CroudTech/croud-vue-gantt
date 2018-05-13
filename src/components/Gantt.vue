@@ -63,23 +63,7 @@
                                     </g>
 
                                     <g class="blocks">
-                                        <g v-if="categoryGroupings" class="block" v-for="(block, $index) in i.blocks" :key="$index">
-                                            <title>{{ block.title }}</title>
-
-                                            <rect @contextmenu.prevent="openContext($event, block)" @click="select(block, $index)" @mousedown="adjustStart(block, $event)" rx="2" ry="2" :x="block.x" :y='block.y' :width='block.width' :height='block.height' :class="{editable: !readOnly && !block.readOnly}" :style="{fill: block.label}">
-                                                <title v-if="block.readOnly" >🔒{{ block.readOnly }}</title>
-                                                <title v-else>{{ block.title }}</title>
-                                            </rect>
-                                            <text v-if="block.readOnly" :x="block.x + (block.width / 2)" :y="block.y + 2 * (block.height / 3)" style="font-family: Icons" class="icon" text-anchor="middle">&#xf023;</text>
-
-                                            <rect v-if="!readOnly && !block.readOnly" class="drag-handle" @mousedown.prevent="adjustEnd(block, $event)" rx="5" ry="5" :x="block.x + block.width - 10" :y='block.y' width='10' :height='block.height' fill="#ccc"/>
-
-                                            <rect v-if="showRepeats" v-for="child in block.children" rx="2" ry="2" :x="child.x" :y='child.y' :width='child.width' :height='child.height' class="repeat" :style="{fill: child.label}" :key="child">
-                                                <title>{{ child.title }}</title>
-                                            </rect>
-                                        </g>
-
-                                        <g v-else class="block" v-for="(block, $index) in nodes" :key="$index">
+                                        <g class="block" v-for="(block, $index) in i.blocks" :key="$index">
                                             <title>{{ block.title }}</title>
 
                                             <rect @contextmenu.prevent="openContext($event, block)" @click="select(block, $index)" @mousedown="adjustStart(block, $event)" rx="2" ry="2" :x="block.x" :y='block.y' :width='block.width' :height='block.height' :class="{editable: !readOnly && !block.readOnly}" :style="{fill: block.label}">
