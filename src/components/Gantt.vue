@@ -437,8 +437,8 @@
             buildGroupByData() {
                 const position = this.calculate ? this.calculatedPosition : this.position
                 const titleGroupings = { misc: [] }
-
                 const startObj = this.categoryGroupings && this.categoryGroupings !== true ? this.categoryGroupings : { misc: [] }
+
                 const processNodes = this.nodes.reduce((grouped, item, i, array, sortKey = item.group_by) => {
                     if (this.categoryGroupings === true && sortKey) {
                         grouped[sortKey] = grouped[sortKey] || []
@@ -460,22 +460,23 @@
 
                     position(item)
 
-                    const filteredGroups = {}
-                    Object.keys(grouped).forEach((prop) => {
-                        if (prop !== 'misc' && grouped[prop].length) { filteredGroups[prop] = grouped[prop] }
-                    })
-
-                    if (!grouped.misc || (grouped.misc && !grouped.misc.length)) return filteredGroups
-
-                    filteredGroups.misc = grouped.misc
-                    return filteredGroups
+                    return grouped
                 }, startObj)
+
+                const filteredGroups = {}
+                Object.keys(processNodes).forEach((prop) => {
+                    if (prop !== 'misc' && processNodes[prop].length) { filteredGroups[prop] = processNodes[prop] }
+                })
+
+                if (processNodes.misc && processNodes.misc.length) {
+                    filteredGroups.misc = processNodes.misc
+                }
 
                 const clonedGroupByData = cloneDeep(this.groupByData)
 
-                this.groupByData = Object.keys(processNodes).map(group => ({
+                this.groupByData = Object.keys(filteredGroups).map(group => ({
                     title: group,
-                    blocks: processNodes[group],
+                    blocks: filteredGroups[group],
                     groupings: titleGroupings[group],
                     show: clonedGroupByData.length && clonedGroupByData.map(g => g.title).indexOf(group) > -1 ? clonedGroupByData[clonedGroupByData.map(g => g.title).indexOf(group)].show : true,
                     height: titleGroupings[group].length * (this.blockHeight),
