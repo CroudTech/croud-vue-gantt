@@ -55,7 +55,7 @@
 
                                 <g class="graph">
                                     <foreignObject width="100%" height="100%">
-                                        <div class="grid-pattern" :style="gridPatternStyles"></div>
+                                        <div class="grid-pattern" :style="[ gridPatternStyles, { height: `${i.height}px` } ]"></div>
                                     </foreignObject>
 
                                     <g class="paths">
@@ -299,7 +299,6 @@
                     end: this.endPeriod,
                     range: 0,
                     units: this.scale,
-                    height: this.groupings.length * (this.blockHeight),
                 }
 
                 this.events.map((event) => {
@@ -393,7 +392,6 @@
                 return {
                     marginTop: `${this.getTopMargin}px`,
                     marginLeft: `${this.titleWidth}px`,
-                    height: `${this.limits.height}px`,
                     backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='${this.scaleWidth * 7}' height='100' viewBox='0 0 ${this.scaleWidth * 7} 100'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.4'%3E%3Cpath opacity='.5' d='M0 0 H 5 V 100 H 0 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
                 }
             },
