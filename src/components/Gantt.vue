@@ -59,7 +59,7 @@
                                     </foreignObject>
 
                                     <g class="paths">
-                                        <path v-for="link in linkPaths" :d="link.path" :class="{critical: link.critical}" :key="link"/>
+                                        <path v-for="(link, index) in linkPaths" :d="link.path" :class="{critical: link.critical}" :key="index"/>
                                     </g>
 
                                     <g class="blocks">
@@ -74,7 +74,7 @@
 
                                             <rect v-if="!readOnly && !block.readOnly" class="drag-handle" @mousedown.prevent="adjustEnd(block, $event)" rx="5" ry="5" :x="block.x + block.width - 10" :y='block.y' width='10' :height='block.height' fill="#ccc"/>
 
-                                            <rect v-if="showRepeats" v-for="child in block.children" rx="2" ry="2" :x="child.x" :y='child.y' :width='child.width' :height='child.height' class="repeat" :style="{fill: child.label}" :key="child">
+                                            <rect v-if="showRepeats" v-for="(child, index) in block.children" rx="2" ry="2" :x="child.x" :y='child.y' :width='child.width' :height='child.height' class="repeat" :style="{fill: child.label}" :key="index">
                                                 <title>{{ child.title }}</title>
                                             </rect>
                                         </g>
