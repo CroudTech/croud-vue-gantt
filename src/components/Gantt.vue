@@ -255,43 +255,6 @@
                 return []
             },
 
-            nodes() {
-                const position = this.calculate ? this.calculatedPosition : this.position
-                this.groupings = []
-                this.links = []
-
-                return this.repeats.map((event, i) => {
-                    let index = this.groupings.indexOf(event.title.toLowerCase())
-                    if (index === -1) {
-                        index = this.groupings.length
-                        this.groupings.push(event.title.toLowerCase())
-                    }
-                    event.event_index = this.grouping ? index : i
-
-                    if (this.showRepeats && event.children && event.children.length) {
-                        event.children.map((ch) => {
-                            ch.event_index = index
-                            position(ch)
-                            return ch
-                        })
-                    }
-
-                    if (event.dependencies) {
-                        event.dependencies.map((dep) => {
-                            this.links.push([
-                                this.events[dep],
-                                event,
-                            ])
-
-                            return dep
-                        })
-                    }
-
-                    position(event)
-                    return event
-                })
-            },
-
             limits() {
                 const limits = {
                     start: this.startPeriod,
