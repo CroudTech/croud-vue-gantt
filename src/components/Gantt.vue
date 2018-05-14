@@ -412,7 +412,7 @@
                 const titleGroupings = { misc: [] }
                 const startObj = this.categoryGroupings && this.categoryGroupings !== true ? this.categoryGroupings : { misc: [] }
 
-                const processNodes = this.nodes.reduce((grouped, item, i, array, sortKey = item.group_by) => {
+                const processNodes = this.repeats.reduce((grouped, item, i, array, sortKey = item.group_by) => {
                     if (this.categoryGroupings === true && sortKey) {
                         grouped[sortKey] = grouped[sortKey] || []
                     }
@@ -430,6 +430,25 @@
                         titleGroupings[computedSortKey].push(item.title.toLowerCase())
                     }
                     item.event_index = this.grouping ? index : i
+
+                    if (this.showRepeats && item.children && item.children.length) {
+                        item.children.map((ch) => {
+                            ch.event_index = index
+                            position(ch)
+                            return ch
+                        })
+                    }
+
+                    if (item.dependencies) {
+                        item.dependencies.map((dep) => {
+                            this.links.push([
+                                this.events[dep],
+                                item,
+                            ])
+
+                            return dep
+                        })
+                    }
 
                     position(item)
 
