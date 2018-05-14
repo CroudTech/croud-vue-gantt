@@ -1,11 +1,11 @@
 <template>
   <div id="app">
-    <gantt :calculate="false" :events="ganttData" :end-period="endPeriod" :start-period="startPeriod" @load-more="loadMore" @selected="selected" :grouping="true" :show-repeats="false" :status-colors="{
+    <gantt :calculate="false" :events="ganttData" :end-period="endPeriod" :start-period="startPeriod" @load-more="loadMore" @selected="selected" :grouping="true" :show-repeats="repeats" :status-colors="{
         complete: '#8bccba',
         active: '#6bc2e2',
         in_progress: '#fbbd08',
     }" :readOnly="false"
-    :category-groupings="true">
+    :category-groupings="group">
         <template slot="context-menu" scope="scope">
             <li @click="selected(scope.selected)" class="item">
                 <i class="edit icon"></i>View
@@ -15,6 +15,14 @@
             </li>
         </template>
     </gantt>
+    <div>
+        <input type="checkbox" v-model="group"/>
+        <label>Group Items</label>
+    </div>
+    <div>
+        <input type="checkbox" v-model="repeats"/>
+        <label>Show Repeats</label>
+    </div>
   </div>
 </template>
 
@@ -36,6 +44,8 @@ export default {
             selectedBlock: null,
             startPeriod: moment().startOf('month').startOf('week'),
             endPeriod: moment().add(1, 'months'),
+            group: true,
+            repeats: true,
             params: {
                 from: moment().subtract(1, 'years').format('YYYY-MM-DD'),
                 to: moment().subtract(1, 'years').add(1, 'months').format('YYYY-MM-DD'),
@@ -135,7 +145,6 @@ export default {
                 return event
             })
             this.initialLoad = true
-            // console.log(this.ganttData)
         })
     },
 
