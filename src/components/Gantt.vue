@@ -530,6 +530,10 @@
 
                     this.cloned.ends_at = moment(this.cloned.ends_at).add(diff, 'days').format('YYYY-MM-DD')
                     position(this.cloned)
+                    this.localSelected.offset = this.cloned.offset
+                    this.localSelected.starts_at = this.cloned.starts_at
+                    this.localSelected.duration = this.cloned.duration
+
                     this.localSelected.x = this.cloned.x
                     this.localSelected.width = this.cloned.width
 
@@ -588,17 +592,7 @@
 
         watch: {
             groupings: 'buildGroupByData',
-
-            'currentEvent.offset': {
-                handler() {
-                    const position = this.calculate ? this.calculatedPosition : this.position
-                    position(this.currentEvent)
-                    if (!this.currentEvent.children) return
-                    this.currentEvent.children.forEach((child) => {
-                        position(child)
-                    })
-                },
-            },
+            repeats: 'buildGroupByData',
         },
     }
 </script>
