@@ -458,7 +458,7 @@
 
             openContext(e, block) {
                 this.localSelected = block
-                this.$refs.ctxMenu.open({
+                this.$refs.ctxMenu[0].open({
                     pageX: e.offsetX,
                     pageY: e.offsetY,
                 })
