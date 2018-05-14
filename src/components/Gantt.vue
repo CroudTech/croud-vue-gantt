@@ -358,6 +358,10 @@
                     backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='${this.scaleWidth * 7}' height='100' viewBox='0 0 ${this.scaleWidth * 7} 100'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.4'%3E%3Cpath opacity='.5' d='M0 0 H 5 V 100 H 0 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
                 }
             },
+
+            currentEvent() {
+                return this.events[this.events.indexOf(this.localSelected)]
+            },
         },
 
         filters: {
@@ -567,6 +571,17 @@
 
         watch: {
             groupings: 'buildGroupByData',
+
+            'currentEvent.offset': {
+                handler() {
+                    const position = this.calculate ? this.calculatedPosition : this.position
+                    position(this.currentEvent)
+                    if (!this.currentEvent.children) return
+                    this.currentEvent.children.forEach((child) => {
+                        position(child)
+                    })
+                },
+            },
         },
     }
 </script>
