@@ -197,7 +197,7 @@
                 topMargin: 35,
                 localSelected: null,
                 cloned: null,
-                groupByData: [],
+                // groupByData: [],
             }
         },
 
@@ -362,19 +362,8 @@
             currentEvent() {
                 return this.events[this.events.indexOf(this.localSelected)]
             },
-        },
 
-        filters: {
-            truncate(val, length) {
-                if (val.length < length) {
-                    return val
-                }
-                return `${val.substring(0, length - 3)}...`
-            },
-        },
-
-        methods: {
-            buildGroupByData() {
+            groupByData() {
                 const position = this.calculate ? this.calculatedPosition : this.position
                 const titleGroupings = { misc: [] }
                 const startObj = this.categoryGroupings && this.categoryGroupings !== true ? this.categoryGroupings : { misc: [] }
@@ -431,16 +420,96 @@
                     filteredGroups.misc = processNodes.misc
                 }
 
-                const clonedGroupByData = cloneDeep(this.groupByData)
+                // const clonedGroupByData = cloneDeep(this.groupByData)
 
-                this.groupByData = Object.keys(filteredGroups).map(group => ({
+                return Object.keys(filteredGroups).map(group => ({
                     title: group,
                     blocks: filteredGroups[group],
                     groupings: titleGroupings[group],
-                    show: clonedGroupByData.length && clonedGroupByData.map(g => g.title).indexOf(group) > -1 ? clonedGroupByData[clonedGroupByData.map(g => g.title).indexOf(group)].show : true,
+                    show: true,
+                    // show: clonedGroupByData.length && clonedGroupByData.map(g => g.title).indexOf(group) > -1 ? clonedGroupByData[clonedGroupByData.map(g => g.title).indexOf(group)].show : true,
                     height: titleGroupings[group].length * (this.blockHeight),
                 }))
             },
+        },
+
+        filters: {
+            truncate(val, length) {
+                if (val.length < length) {
+                    return val
+                }
+                return `${val.substring(0, length - 3)}...`
+            },
+        },
+
+        methods: {
+            // buildGroupByData() {
+            //     const position = this.calculate ? this.calculatedPosition : this.position
+            //     const titleGroupings = { misc: [] }
+            //     const startObj = this.categoryGroupings && this.categoryGroupings !== true ? this.categoryGroupings : { misc: [] }
+
+            //     const processNodes = this.repeats.reduce((grouped, item, i, array, sortKey = item.group_by) => {
+            //         if (this.categoryGroupings === true && sortKey) {
+            //             grouped[sortKey] = grouped[sortKey] || []
+            //         }
+
+            //         const computedSortKey = grouped[sortKey] ? sortKey : 'misc'
+
+            //         const group = grouped[computedSortKey]
+            //         if (group.indexOf(item) === -1) group.push(item)
+
+            //         titleGroupings[computedSortKey] = titleGroupings[computedSortKey] || []
+
+            //         let index = titleGroupings[computedSortKey].indexOf(item.title.toLowerCase())
+            //         if (index === -1) {
+            //             index = titleGroupings[computedSortKey].length
+            //             titleGroupings[computedSortKey].push(item.title.toLowerCase())
+            //         }
+            //         item.event_index = this.grouping ? index : i
+
+            //         if (this.showRepeats && item.children && item.children.length) {
+            //             item.children.map((ch) => {
+            //                 ch.event_index = index
+            //                 position(ch)
+            //                 return ch
+            //             })
+            //         }
+
+            //         if (item.dependencies) {
+            //             item.dependencies.map((dep) => {
+            //                 this.links.push([
+            //                     this.events[dep],
+            //                     item,
+            //                 ])
+
+            //                 return dep
+            //             })
+            //         }
+
+            //         position(item)
+
+            //         return grouped
+            //     }, startObj)
+
+            //     const filteredGroups = {}
+            //     Object.keys(processNodes).forEach((prop) => {
+            //         if (prop !== 'misc' && processNodes[prop].length) { filteredGroups[prop] = processNodes[prop] }
+            //     })
+
+            //     if (processNodes.misc && processNodes.misc.length) {
+            //         filteredGroups.misc = processNodes.misc
+            //     }
+
+            //     const clonedGroupByData = cloneDeep(this.groupByData)
+
+            //     this.groupByData = Object.keys(filteredGroups).map(group => ({
+            //         title: group,
+            //         blocks: filteredGroups[group],
+            //         groupings: titleGroupings[group],
+            //         show: clonedGroupByData.length && clonedGroupByData.map(g => g.title).indexOf(group) > -1 ? clonedGroupByData[clonedGroupByData.map(g => g.title).indexOf(group)].show : true,
+            //         height: titleGroupings[group].length * (this.blockHeight),
+            //     }))
+            // },
 
             openContext(e, block, $index) {
                 this.localSelected = block
@@ -577,22 +646,23 @@
         },
 
         mounted() {
-            this.buildGroupByData()
+            // this.buildGroupByData()
         },
 
         watch: {
-            groupings: 'buildGroupByData',
+            // groupings: 'buildGroupByData',
 
-            'currentEvent.offset': {
-                handler() {
-                    const position = this.calculate ? this.calculatedPosition : this.position
-                    position(this.currentEvent)
-                    if (!this.currentEvent.children) return
-                    this.currentEvent.children.forEach((child) => {
-                        position(child)
-                    })
-                },
-            },
+            // localSelected: {
+            //     deep: true,
+            //     handler() {
+            //         const position = this.calculate ? this.calculatedPosition : this.position
+            //         position(this.localSelected)
+            //         if (!this.localSelected.children) return
+            //         this.localSelected.children.forEach((child) => {
+            //             position(child)
+            //         })
+            //     },
+            // },
         },
     }
 </script>
