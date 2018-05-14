@@ -43,7 +43,7 @@
                             </g>
                     </svg>
                 </div>
-                    <div v-for="(i, index) in groupByData" :key="index" :style="{height: `${i.show ? i.height + getTopMargin : getTopMargin}px`}">
+                    <div v-for="(i, rootIndex) in groupByData" :key="rootIndex" :style="{height: `${i.show ? i.height + getTopMargin : getTopMargin}px`}">
                         <svg ref="svg" id="timeline-events" :width="svgWidth" :height="i.show ? i.height + getTopMargin : 0"  v-if="i.show">
                             <g>
                                 <g>
@@ -66,7 +66,7 @@
                                         <g class="block" v-for="(block, $index) in i.blocks" :key="$index">
                                             <title>{{ block.title }}</title>
 
-                                            <rect @contextmenu.prevent="openContext($event, block)" @click="select(block, $index)" @mousedown="adjustStart(block, $event)" rx="2" ry="2" :x="block.x" :y='block.y' :width='block.width' :height='block.height' :class="{editable: !readOnly && !block.readOnly}" :style="{fill: block.label}">
+                                            <rect @contextmenu.prevent="openContext($event, block, rootIndex)" @click="select(block, $index)" @mousedown="adjustStart(block, $event)" rx="2" ry="2" :x="block.x" :y='block.y' :width='block.width' :height='block.height' :class="{editable: !readOnly && !block.readOnly}" :style="{fill: block.label}">
                                                 <title v-if="block.readOnly" >🔒{{ block.readOnly }}</title>
                                                 <title v-else>{{ block.title }}</title>
                                             </rect>
@@ -442,12 +442,23 @@
                 }))
             },
 
-            openContext(e, block) {
+            openContext(e, block, $index) {
                 this.localSelected = block
-                this.$refs.ctxMenu[0].open({
+
+                if (this.$refs.ctxMenu.length > 1) {
+                    this.$refs.ctxMenu.forEach((menu) => {
+                        menu.ctxVisible = false
+                    })
+                    this.$refs.ctxMenu[$index].open({
+                        pageX: e.offsetX,
+                        pageY: e.offsetY,
+                    })
+                } else {
+                    this.$refs.ctxMenu[$index].open({
                     pageX: e.offsetX,
                     pageY: e.offsetY,
                 })
+                }
             },
 
             collide(e) {
