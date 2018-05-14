@@ -455,9 +455,9 @@
                     })
                 } else {
                     this.$refs.ctxMenu[$index].open({
-                    pageX: e.offsetX,
-                    pageY: e.offsetY,
-                })
+                        pageX: e.offsetX,
+                        pageY: e.offsetY,
+                    })
                 }
             },
 
