@@ -451,12 +451,12 @@
                     })
                     this.$refs.ctxMenu[$index].open({
                         pageX: e.offsetX,
-                        pageY: e.offsetY,
+                        pageY: e.offsetY - 25,
                     })
                 } else {
                     this.$refs.ctxMenu[$index].open({
                         pageX: e.offsetX,
-                        pageY: e.offsetY,
+                        pageY: e.offsetY - 25,
                     })
                 }
             },
