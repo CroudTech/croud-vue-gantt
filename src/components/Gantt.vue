@@ -59,7 +59,7 @@
                                     </foreignObject>
 
                                     <g class="paths">
-                                        <path v-for="(link, index) in linkPaths" :d="link.path" :class="{critical: link.critical}" :key="index"/>
+                                        <path v-for="(link, index) in linkPaths[rootIndex]" :d="link.path" :class="{critical: link.critical}" :key="index"/>
                                     </g>
 
                                     <g class="blocks">
@@ -214,24 +214,27 @@
             },
 
             linkPaths() {
-                // if (!this.calculate) return []
-
-                return this.links.map((link) => {
-                    const startX = link[0].x + (link[0].width / 2)
-                    const startY = (link[0].y) + link[0].height
-                    const laneTop = link[1].y
-                    const endX = link[1].x
-                    const endY = (link[1].y) + (this.blockHeight / 3)
-                    link.path = `M${startX} ${startY}
-                                L ${startX} ${laneTop}
-                                a 12 12 0 0 0 12 12
-                                L ${endX} ${endY}
-                                M ${endX - 10} ${endY - 7}
-                                L ${endX} ${endY}
-                                L ${endX - 10} ${endY + 7}`
-                    link.critical = link[2] ? link[2] : false
-                    return link
+                const links = []
+                this.groupByData.forEach((group) => {
+                    links.push(group.links.map((link) => {
+                        const startX = link[0].x + (link[0].width / 2)
+                        const startY = (link[0].y) + link[0].height
+                        const laneTop = link[1].y
+                        const endX = link[1].x
+                        const endY = (link[1].y) + (this.blockHeight / 3)
+                        link.path = `M${startX} ${startY}
+                                    L ${startX} ${laneTop}
+                                    a 12 12 0 0 0 12 12
+                                    L ${endX} ${endY}
+                                    M ${endX - 10} ${endY - 7}
+                                    L ${endX} ${endY}
+                                    L ${endX - 10} ${endY + 7}`
+                        link.critical = link[2] ? link[2] : false
+                        return link
+                    }))
                 })
+
+                return links
             },
 
             smartGrids() {
@@ -377,6 +380,7 @@
             buildGroupByData() {
                 const position = this.calculate ? this.calculatedPosition : this.position
                 const titleGroupings = { misc: [] }
+                const links = { misc: [] }
                 const startObj = this.categoryGroupings && this.categoryGroupings !== true ? this.categoryGroupings : { misc: [] }
 
                 const processNodes = this.repeats.reduce((grouped, item, i, array, sortKey = item.group_by) => {
@@ -407,8 +411,9 @@
                     }
 
                     if (item.dependencies) {
+                        links[computedSortKey] = links[computedSortKey] || []
                         item.dependencies.map((dep) => {
-                            this.links.push([
+                            links[computedSortKey].push([
                                 this.events[dep],
                                 item,
                             ])
@@ -435,6 +440,7 @@
 
                 this.groupByData = Object.keys(filteredGroups).map(group => ({
                     title: group,
+                    links: links[group],
                     blocks: filteredGroups[group],
                     groupings: titleGroupings[group],
                     show: clonedGroupByData.length && clonedGroupByData.map(g => g.title).indexOf(group) > -1 ? clonedGroupByData[clonedGroupByData.map(g => g.title).indexOf(group)].show : true,
@@ -524,6 +530,10 @@
 
                     this.cloned.ends_at = moment(this.cloned.ends_at).add(diff, 'days').format('YYYY-MM-DD')
                     position(this.cloned)
+                    this.localSelected.offset = this.cloned.offset
+                    this.localSelected.starts_at = this.cloned.starts_at
+                    this.localSelected.duration = this.cloned.duration
+
                     this.localSelected.x = this.cloned.x
                     this.localSelected.width = this.cloned.width
 
@@ -582,17 +592,7 @@
 
         watch: {
             groupings: 'buildGroupByData',
-
-            'currentEvent.offset': {
-                handler() {
-                    const position = this.calculate ? this.calculatedPosition : this.position
-                    position(this.currentEvent)
-                    if (!this.currentEvent.children) return
-                    this.currentEvent.children.forEach((child) => {
-                        position(child)
-                    })
-                },
-            },
+            repeats: 'buildGroupByData',
         },
     }
 </script>
