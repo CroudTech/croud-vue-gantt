@@ -381,7 +381,7 @@
                 const position = this.calculate ? this.calculatedPosition : this.position
                 const titleGroupings = { misc: [] }
                 const links = { misc: [] }
-                const startObj = this.categoryGroupings && this.categoryGroupings !== true ? this.categoryGroupings : { misc: [] }
+                const startObj = cloneDeep(this.categoryGroupings && this.categoryGroupings !== true ? this.categoryGroupings : { misc: [] })
 
                 const processNodes = this.repeats.reduce((grouped, item, i, array, sortKey = item.group_by) => {
                     if (this.categoryGroupings === true && sortKey) {
@@ -440,7 +440,7 @@
 
                 this.groupByData = Object.keys(filteredGroups).map(group => ({
                     title: group,
-                    links: links[group],
+                    links: links[group] || [],
                     blocks: filteredGroups[group],
                     groupings: titleGroupings[group],
                     show: clonedGroupByData.length && clonedGroupByData.map(g => g.title).indexOf(group) > -1 ? clonedGroupByData[clonedGroupByData.map(g => g.title).indexOf(group)].show : true,
@@ -689,7 +689,6 @@
     }
     #adpcalendar {
         overflow: hidden;
-        margin-top: -20px;
         margin-bottom: 20px;
         display: flex;
     }
