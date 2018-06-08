@@ -440,7 +440,7 @@
 
                 this.groupByData = Object.keys(filteredGroups).map(group => ({
                     title: group,
-                    links: links[group],
+                    links: links[group] || [],
                     blocks: filteredGroups[group],
                     groupings: titleGroupings[group],
                     show: clonedGroupByData.length && clonedGroupByData.map(g => g.title).indexOf(group) > -1 ? clonedGroupByData[clonedGroupByData.map(g => g.title).indexOf(group)].show : true,
