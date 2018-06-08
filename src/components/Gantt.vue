@@ -689,7 +689,6 @@
     }
     #adpcalendar {
         overflow: hidden;
-        margin-top: -20px;
         margin-bottom: 20px;
         display: flex;
     }
