@@ -381,7 +381,7 @@
                 const position = this.calculate ? this.calculatedPosition : this.position
                 const titleGroupings = { misc: [] }
                 const links = { misc: [] }
-                const startObj = this.categoryGroupings && this.categoryGroupings !== true ? this.categoryGroupings : { misc: [] }
+                const startObj = cloneDeep(this.categoryGroupings && this.categoryGroupings !== true ? this.categoryGroupings : { misc: [] })
 
                 const processNodes = this.repeats.reduce((grouped, item, i, array, sortKey = item.group_by) => {
                     if (this.categoryGroupings === true && sortKey) {
