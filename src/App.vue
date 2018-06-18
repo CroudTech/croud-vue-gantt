@@ -1,10 +1,11 @@
 <template>
   <div id="app">
-    <gantt :calculate="false" :events="ganttData" :end-period="endPeriod" :start-period="startPeriod" @load-more="loadMore" @selected="selected" :grouping="true" :show-repeats="false" :status-colors="{
+    <gantt :calculate="false" :events="ganttData" :end-period="endPeriod" :start-period="startPeriod" @load-more="loadMore" @selected="selected" :grouping="true" :show-repeats="repeats" :status-colors="{
         complete: '#8bccba',
         active: '#6bc2e2',
         in_progress: '#fbbd08',
-    }" :readOnly="false">
+    }" :readOnly="false"
+    :category-groupings="group">
         <template slot="context-menu" scope="scope">
             <li @click="selected(scope.selected)" class="item">
                 <i class="edit icon"></i>View
@@ -14,6 +15,14 @@
             </li>
         </template>
     </gantt>
+    <div>
+        <input type="checkbox" v-model="group"/>
+        <label>Group Items</label>
+    </div>
+    <div>
+        <input type="checkbox" v-model="repeats"/>
+        <label>Show Repeats</label>
+    </div>
   </div>
 </template>
 
@@ -35,6 +44,8 @@ export default {
             selectedBlock: null,
             startPeriod: moment().startOf('month').startOf('week'),
             endPeriod: moment().add(1, 'months'),
+            group: true,
+            repeats: true,
             params: {
                 from: moment().subtract(1, 'years').format('YYYY-MM-DD'),
                 to: moment().subtract(1, 'years').add(1, 'months').format('YYYY-MM-DD'),
@@ -49,6 +60,7 @@ export default {
                     x: 0,
                     width: 0,
                     readOnly: true,
+                    group_by: '',
                 },
                 {
                     title: 'A New Event',
@@ -61,6 +73,7 @@ export default {
                     status: 'in_progress',
                     x: 0,
                     width: 0,
+                    group_by: 'foo',
                 },
                 {
                     title: 'Dependent Event',
@@ -69,10 +82,11 @@ export default {
                     frequency: {
                         key: 'weekly',
                     },
-                    dependencies: [0, 1],
+                    dependencies: [], // [0, 1],
                     status: 'active',
                     x: 0,
                     width: 0,
+                    group_by: 'bar',
                 },
                 {
                     title: 'Another Event',
@@ -85,6 +99,7 @@ export default {
                     status: 'active',
                     x: 0,
                     width: 0,
+                    group_by: 'bar',
                 },
             ],
         }
@@ -130,7 +145,6 @@ export default {
                 return event
             })
             this.initialLoad = true
-            // console.log(this.ganttData)
         })
     },
 
@@ -161,11 +175,10 @@ export default {
 
 <style>
 #app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
+  font-family: 'Lato', Verdana, Geneva, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
+  color: #292929;
   margin-top: 60px;
 }
 </style>

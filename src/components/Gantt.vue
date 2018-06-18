@@ -2,72 +2,98 @@
     <div>
         <div id="adpcalendar">
             <div id="timeline-sidebar">
-                <svg id="event-types" ref="svg" :width="titleWidth" :height='limits.height'>
-                    <g class="rows">
-                        <rect v-for="(block, $index) in groupings" x="0" :y="blockHeight * $index" width="100%" :height="blockHeight" stroke="#f5f5f5" stroke-width="2" :key="$index"></rect>
-                    </g>
-                    <g v-for="(block, $index) in groupings" :key="$index">
-                        <title>{{ block }}</title>
-                        <text @click="select(block)" text-anchor="right" :x="5" :y="(blockHeight * $index) + 5 +(blockHeight / 2)">{{ block | truncate(52) }}</text>
-                    </g>
-                </svg>
+                <div v-for="(i, index) in groupByData" :key="index" :style="{height: `${i.show ? i.height + getTopMargin : getTopMargin}px`}">
+                    <div v-if="categoryGroupings" class="category-header-wrapper" :style="{'height': `${blockHeight}px`}">
+                        <slot name="category-header" :data="i">
+                            <div class="category-header" @click="i.show = !i.show">
+                                <div class="title">{{ i.title }} ({{ i.blocks.length }})</div>
+                                <div v-if="i.show" class="caret collapsed">&rsaquo;</div>
+                                <div v-else class="caret">&rsaquo;</div>
+                            </div>
+                        </slot>
+                    </div>
+                    <svg id="event-types" ref="svg" :width="titleWidth" :height='i.height' v-if="i.show">
+                        <g class="rows">
+                            <rect v-for="(block, $index) in i.groupings" x="0" :y="blockHeight * $index" width="100%" :height="blockHeight" stroke="#f5f5f5" stroke-width="2" :key="$index"></rect>
+                        </g>
+                        <g v-for="(block, $index) in i.groupings" :key="$index">
+                            <title>{{ block }}</title>
+                            <text @click="select(block)" text-anchor="right" :x="15" :y="(blockHeight * $index) + 5 +(blockHeight / 2)">{{ block | truncate(52) }}</text>
+                        </g>
+                    </svg>
+                </div>
             </div>
 
             <div id="timeline-container" ref="container" @mousemove="move" @mouseup="mouseUp">
-                <div id="timeline" class="timeline" ref="timeline">
-                    <svg ref="svg" id="timeline-events" :width="svgWidth" :height='limits.height + 21'>
-                        <g>
-                            <g class="rows">
-                                <rect v-for="(block, $index) in groupings" x="0" :y="blockHeight * $index + topMargin" width="100%" :height="blockHeight" stroke="#f5f5f5" stroke-width="2" :key="$index"></rect>
-                            </g>
+                <div id="timeline" class="timeline" ref="timeline" :style="{'min-height': `${groupByData.length * blockHeight}px`}">
+                    <div id="timeline-dates" :style="{width: `${svgWidth}px`}">
+                     <svg ref="svg" :width="svgWidth" :height='22'>
+                            <g>
+                                <g>
+                                    <g class="titles">
+                                        <g v-for="(line, $index) in gridLines" v-if="$index % smartGrids === 1" :key="$index">
+                                            <text text-anchor="middle" :x="($index - 1) * hourWidth + titleWidth" y="10">{{ line }}</text>
+                                        </g>
 
-                            <g class="graph">
-                                <g class="titles">
-                                    <g v-for="(line, $index) in gridLines" v-if="$index % smartGrids === 1" :key="$index">
-                                        <text text-anchor="middle" :x="($index - 1) * hourWidth + titleWidth" y="10">{{ line }}</text>
+                                        <foreignObject :x='svgWidth - 500' width="1" height="100%" v-if="inifinteScroll">
+                                            <v-waypoint @waypoint="collide" :horizontal="true"></v-waypoint>
+                                        </foreignObject>
                                     </g>
-                                    <foreignObject :x='svgWidth - 500' width="1" height="100%" v-if="inifinteScroll">
-                                        <v-waypoint @waypoint="collide" :horizontal="true"></v-waypoint>
-                                    </foreignObject>
-                                </g>
-
-                                <foreignObject width="100%" height="100%">
-                                    <div class="grid-pattern" :style="gridPatternStyles"></div>
-                                </foreignObject>
-
-                                <g class="paths">
-                                    <path v-for="link in linkPaths" :d="link.path" :class="{critical: link.critical}" :key="link"/>
-                                </g>
-
-                                <g class="blocks">
-                                    <g class="block" v-for="(block, $index) in nodes" :key="$index">
-                                        <title>{{ block.title }}</title>
-
-                                        <rect @contextmenu.prevent="openContext($event, block)" @click="select(block, $index)" @mousedown="adjustStart(block, $event)" rx="2" ry="2" :x="block.x" :y='block.y' :width='block.width' :height='block.height' :class="{editable: !readOnly && !block.readOnly}" :style="{fill: block.label}">
-                                            <title v-if="block.readOnly" >🔒{{ block.readOnly }}</title>
-                                            <title v-else>{{ block.title }}</title>
-                                        </rect>
-                                        <text v-if="block.readOnly" :x="block.x + (block.width / 2)" :y="block.y + 2 * (block.height / 3)" style="font-family: Icons" class="icon" text-anchor="middle">&#xf023;</text>
-
-                                        <rect v-if="!readOnly && !block.readOnly" class="drag-handle" @mousedown.prevent="adjustEnd(block, $event)" rx="5" ry="5" :x="block.x + block.width - 10" :y='block.y' width='10' :height='block.height' fill="#ccc"/>
-
-                                        <rect v-if="showRepeats" v-for="child in block.children" rx="2" ry="2" :x="child.x" :y='child.y' :width='child.width' :height='child.height' class="repeat" :style="{fill: child.label}" :key="child">
-                                            <title>{{ child.title }}</title>
-                                        </rect>
-                                    </g>
-                                    <foreignObject>
-                                        <context-menu ref="ctxMenu">
-                                            <slot name="context-menu" :selected="localSelected">
-                                                <li @click="$emit('selected', localSelected)" class="item">
-                                                    <i class="edit icon"></i>Edit
-                                                </li>
-                                            </slot>
-                                        </context-menu>
-                                    </foreignObject>
                                 </g>
                             </g>
-                        </g>
                     </svg>
+                </div>
+                    <div v-for="(i, rootIndex) in groupByData" :key="rootIndex" :style="{height: `${i.show ? i.height + getTopMargin : getTopMargin}px`}">
+                        <svg ref="svg" id="timeline-events" :width="svgWidth" :height="i.show ? i.height + getTopMargin : 0"  v-show="i.show">
+                            <g>
+                                <g>
+                                    <rect @click="i.show = false" x="0" :y="0" width="100%" fill="transparent" :height="blockHeight" stroke="#eceaef" stroke-width="2"></rect>
+                                </g>
+                                <g class="rows">
+                                    <rect v-for="(block, $index) in i.groupings" x="0" :y="blockHeight * $index + getTopMargin" width="100%" :height="blockHeight" stroke="#f5f5f5" stroke-width="2" :key="$index"></rect>
+                                </g>
+
+                                <g class="graph">
+                                    <foreignObject width="100%" height="100%">
+                                        <div class="grid-pattern" :style="[ gridPatternStyles, { height: `${i.height}px` } ]"></div>
+                                    </foreignObject>
+
+                                    <g class="paths">
+                                        <path v-for="(link, index) in linkPaths[rootIndex]" :d="link.path" :class="{critical: link.critical}" :key="index"/>
+                                    </g>
+
+                                    <g class="blocks">
+                                        <g class="block" v-for="(block, $index) in i.blocks" :key="$index">
+                                            <title>{{ block.title }}</title>
+
+                                            <rect @contextmenu.prevent="openContext($event, block, rootIndex)" @click="select(block, $index)" @mousedown="adjustStart(block, $event)" rx="2" ry="2" :x="block.x" :y='block.y' :width='block.width' :height='block.height' :class="{editable: !readOnly && !block.readOnly}" :style="{fill: block.label}">
+                                                <title v-if="block.readOnly" >🔒{{ block.readOnly }}</title>
+                                                <title v-else>{{ block.title }}</title>
+                                            </rect>
+                                            <text v-if="block.readOnly" :x="block.x + (block.width / 2)" :y="block.y + 2 * (block.height / 3)" style="font-family: Icons" class="icon" text-anchor="middle">&#xf023;</text>
+
+                                            <rect v-if="!readOnly && !block.readOnly" class="drag-handle" @mousedown.prevent="adjustEnd(block, $event)" rx="5" ry="5" :x="block.x + block.width - 10" :y='block.y' width='10' :height='block.height' fill="#ccc"/>
+
+                                            <rect v-if="showRepeats" v-for="(child, index) in block.children" rx="2" ry="2" :x="child.x" :y='child.y' :width='child.width' :height='child.height' class="repeat" :style="{fill: child.label}" :key="index">
+                                                <title>{{ child.title }}</title>
+                                            </rect>
+                                        </g>
+
+                                        <foreignObject>
+                                            <context-menu ref="ctxMenu">
+                                                <slot name="context-menu" :selected="localSelected">
+                                                    <li @click="$emit('selected', localSelected)" class="item">
+                                                        <i class="edit icon"></i>Edit
+                                                    </li>
+                                                </slot>
+                                            </context-menu>
+                                        </foreignObject>
+                                    </g>
+                                </g>
+                            </g>
+                        </svg>
+                        <div v-show="!i.show" class="closed-bar" :style="{width: `${svgWidth}px`, height: `${blockHeight}px`}" @click="i.show = !i.show"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -76,7 +102,7 @@
 
 <script>
     import moment from 'moment'
-    import _ from 'lodash'
+    import { cloneDeep } from 'lodash'
     import contextMenu from 'vue-context-menu'
 
     export default {
@@ -137,6 +163,11 @@
                 type: Boolean,
                 default: false,
             },
+
+            categoryGroupings: {
+                type: [Boolean, Object],
+                default: false,
+            },
         },
 
         components: {
@@ -163,9 +194,10 @@
                 categoryWidth: 300,
 
                 titleWidth: 0,
-                topMargin: 20,
+                topMargin: 35,
                 localSelected: null,
                 cloned: null,
+                groupByData: [],
             }
         },
 
@@ -182,24 +214,27 @@
             },
 
             linkPaths() {
-                // if (!this.calculate) return []
-
-                return this.links.map((link) => {
-                    const startX = link[0].x + (link[0].width / 2)
-                    const startY = (link[0].y) + link[0].height
-                    const laneTop = link[1].y
-                    const endX = link[1].x
-                    const endY = (link[1].y) + (this.blockHeight / 3)
-                    link.path = `M${startX} ${startY}
-                                L ${startX} ${laneTop}
-                                a 12 12 0 0 0 12 12
-                                L ${endX} ${endY}
-                                M ${endX - 10} ${endY - 7}
-                                L ${endX} ${endY}
-                                L ${endX - 10} ${endY + 7}`
-                    link.critical = link[2] ? link[2] : false
-                    return link
+                const links = []
+                this.groupByData.forEach((group) => {
+                    links.push(group.links.map((link) => {
+                        const startX = link[0].x + (link[0].width / 2)
+                        const startY = (link[0].y) + link[0].height
+                        const laneTop = link[1].y
+                        const endX = link[1].x
+                        const endY = (link[1].y) + (this.blockHeight / 3)
+                        link.path = `M${startX} ${startY}
+                                    L ${startX} ${laneTop}
+                                    a 12 12 0 0 0 12 12
+                                    L ${endX} ${endY}
+                                    M ${endX - 10} ${endY - 7}
+                                    L ${endX} ${endY}
+                                    L ${endX - 10} ${endY + 7}`
+                        link.critical = link[2] ? link[2] : false
+                        return link
+                    }))
                 })
+
+                return links
             },
 
             smartGrids() {
@@ -223,43 +258,6 @@
                 return []
             },
 
-            nodes() {
-                const position = this.calculate ? this.calculatedPosition : this.position
-                this.groupings = []
-                this.links = []
-
-                return this.repeats.map((event, i) => {
-                    let index = this.groupings.indexOf(event.title.toLowerCase())
-                    if (index === -1) {
-                        index = this.groupings.length
-                        this.groupings.push(event.title.toLowerCase())
-                    }
-                    event.event_index = this.grouping ? index : i
-
-                    if (this.showRepeats && event.children && event.children.length) {
-                        event.children.map((ch) => {
-                            ch.event_index = index
-                            position(ch)
-                            return ch
-                        })
-                    }
-
-                    if (event.dependencies) {
-                        event.dependencies.map((dep) => {
-                            this.links.push([
-                                this.events[dep],
-                                event,
-                            ])
-
-                            return dep
-                        })
-                    }
-
-                    position(event)
-                    return event
-                })
-            },
-
             limits() {
                 const limits = {
                     start: this.startPeriod,
@@ -267,7 +265,6 @@
                     end: this.endPeriod,
                     range: 0,
                     units: this.scale,
-                    height: this.groupings.length * (this.blockHeight),
                 }
 
                 this.events.map((event) => {
@@ -302,7 +299,7 @@
                     // curr.label = preset_labels[curr.preset_id]
                     curr.label = this.statusColors[curr.status]
 
-                    if (!this.showRepeats) {
+                    if (!this.showRepeats || !curr.frequency) {
                         masterEvents.push(curr)
                         return curr
                     }
@@ -353,13 +350,20 @@
                 return masterEvents
             },
 
+            getTopMargin() {
+                return this.categoryGroupings ? this.topMargin : 0
+            },
+
             gridPatternStyles() {
                 return {
-                    marginTop: '20px',
+                    marginTop: `${this.getTopMargin}px`,
                     marginLeft: `${this.titleWidth}px`,
-                    height: `${this.limits.height}px`,
                     backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='${this.scaleWidth * 7}' height='100' viewBox='0 0 ${this.scaleWidth * 7} 100'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.4'%3E%3Cpath opacity='.5' d='M0 0 H 5 V 100 H 0 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
                 }
+            },
+
+            currentEvent() {
+                return this.events[this.events.indexOf(this.localSelected)]
             },
         },
 
@@ -373,12 +377,94 @@
         },
 
         methods: {
-            openContext(e, block) {
-                this.localSelected = block
-                this.$refs.ctxMenu.open({
-                    pageX: e.offsetX,
-                    pageY: e.offsetY,
+            buildGroupByData() {
+                const position = this.calculate ? this.calculatedPosition : this.position
+                const titleGroupings = { misc: [] }
+                const links = { misc: [] }
+                const startObj = cloneDeep(this.categoryGroupings && this.categoryGroupings !== true ? this.categoryGroupings : { misc: [] })
+
+                const processNodes = this.repeats.reduce((grouped, item, i, array, sortKey = item.group_by) => {
+                    if (this.categoryGroupings === true && sortKey) {
+                        grouped[sortKey] = grouped[sortKey] || []
+                    }
+
+                    const computedSortKey = grouped[sortKey] ? sortKey : 'misc'
+
+                    const group = grouped[computedSortKey]
+                    if (group.indexOf(item) === -1) group.push(item)
+
+                    titleGroupings[computedSortKey] = titleGroupings[computedSortKey] || []
+
+                    let index = titleGroupings[computedSortKey].indexOf(item.title.toLowerCase())
+                    if (index === -1) {
+                        index = titleGroupings[computedSortKey].length
+                        titleGroupings[computedSortKey].push(item.title.toLowerCase())
+                    }
+                    item.event_index = this.grouping ? index : i
+
+                    if (this.showRepeats && item.children && item.children.length) {
+                        item.children.map((ch) => {
+                            ch.event_index = index
+                            position(ch)
+                            return ch
+                        })
+                    }
+
+                    if (item.dependencies) {
+                        links[computedSortKey] = links[computedSortKey] || []
+                        item.dependencies.map((dep) => {
+                            links[computedSortKey].push([
+                                this.events[dep],
+                                item,
+                            ])
+
+                            return dep
+                        })
+                    }
+
+                    position(item)
+
+                    return grouped
+                }, startObj)
+
+                const filteredGroups = {}
+                Object.keys(processNodes).forEach((prop) => {
+                    if (prop !== 'misc' && processNodes[prop].length) { filteredGroups[prop] = processNodes[prop] }
                 })
+
+                if (processNodes.misc && processNodes.misc.length) {
+                    filteredGroups.misc = processNodes.misc
+                }
+
+                const clonedGroupByData = cloneDeep(this.groupByData)
+
+                this.groupByData = Object.keys(filteredGroups).map(group => ({
+                    title: group,
+                    links: links[group] || [],
+                    blocks: filteredGroups[group],
+                    groupings: titleGroupings[group],
+                    show: clonedGroupByData.length && clonedGroupByData.map(g => g.title).indexOf(group) > -1 ? clonedGroupByData[clonedGroupByData.map(g => g.title).indexOf(group)].show : true,
+                    height: titleGroupings[group].length * (this.blockHeight),
+                }))
+            },
+
+            openContext(e, block, $index) {
+                this.localSelected = block
+
+                if (this.$refs.ctxMenu.length > 1) {
+                    this.$refs.ctxMenu.forEach((menu) => {
+                        menu.ctxVisible = false
+                    })
+                    this.$refs.ctxMenu[$index].open({
+                        pageX: e.offsetX,
+                        pageY: e.offsetY - 25,
+                    })
+                } else {
+                    this.$refs.ctxMenu[$index].open({
+                        pageX: e.offsetX,
+                        pageY: e.offsetY - 25,
+                    })
+                }
             },
 
             collide(e) {
@@ -398,7 +484,7 @@
                 event.x = (((event.offset + this.globalOffset) + ((event.page - 1) * 30)) * this.scaleWidth) + this.titleWidth
                 event.width = event.duration * this.scaleWidth
                 event.height = this.blockHeight - 15
-                event.y = (event.event_index * this.blockHeight) + 7.5 + this.topMargin
+                event.y = (event.event_index * this.blockHeight) + 7.5 + this.getTopMargin
                 return event
             },
 
@@ -415,7 +501,7 @@
                 this.startMouse = evt
                 this.dragging = 'start'
                 this.localSelected = block
-                this.cloned = _.cloneDeep(this.localSelected)
+                this.cloned = cloneDeep(this.localSelected)
             },
 
             adjustEnd(block, evt) {
@@ -423,7 +509,7 @@
                 this.startMouse = evt
                 this.dragging = 'end'
                 this.localSelected = block
-                this.cloned = _.cloneDeep(this.localSelected)
+                this.cloned = cloneDeep(this.localSelected)
             },
 
             // move: _.debounce(function (evt) {
@@ -444,6 +530,10 @@
 
                     this.cloned.ends_at = moment(this.cloned.ends_at).add(diff, 'days').format('YYYY-MM-DD')
                     position(this.cloned)
+                    this.localSelected.offset = this.cloned.offset
+                    this.localSelected.starts_at = this.cloned.starts_at
+                    this.localSelected.duration = this.cloned.duration
+
                     this.localSelected.x = this.cloned.x
                     this.localSelected.width = this.cloned.width
 
@@ -495,12 +585,27 @@
                 return eventList
             },
         },
+
+        mounted() {
+            this.buildGroupByData()
+        },
+
+        watch: {
+            groupings: 'buildGroupByData',
+            repeats: 'buildGroupByData',
+        },
     }
 </script>
 
 <style lang="scss" scoped>
+    $header-border-size: 1px;
+    $header-border-colour: #eceaef;
+    $header-caret-colour: #666666;
+    $row-border: solid $header-border-size $header-border-colour;
+    $white: #ffffff;
+
     .rows rect {
-        fill: #fff;
+        fill: $white
     }
     .rows rect:nth-child(even) {
         fill: #f5f5f5;
@@ -545,20 +650,26 @@
     }
 
     #timeline-sidebar {
-        padding-top:30px;
+        padding-top: 35px;
         overflow: hidden;
         border-right: 5px solid rgba(200, 200, 200, 1);
-        margin-top: 20px;
         min-width: 300px;
     }
+
     #timeline-container {
         overflow-x: auto;
-        margin-top: 30px;
+        margin-top: 0;
+    }
+
+    #timeline-dates {
+        display: flex;
+        margin-top: 13px;
     }
 
     #timeline {
         width: 100%;
         display: block;
+        padding-bottom: 10px;
         overflow-x: scroll;
     }
     #event-types {
@@ -567,7 +678,7 @@
     }
     #timeline-content {
         flex: 1 1 auto;
-        overflow:auto;
+        overflow: auto;
     }
     #timeline-events {
         overflow: visible;
@@ -578,9 +689,46 @@
     }
     #adpcalendar {
         overflow: hidden;
-        margin-top: -20px;
         margin-bottom: 20px;
         display: flex;
+    }
+
+    .category-header-wrapper {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        border: $row-border;
+    }
+
+    .category-header {
+        display: flex;
+        align-items: center;
+        padding: 0 10px;
+
+        font-weight: 800;
+        text-transform: capitalize;
+
+        cursor: pointer;
+
+        .title {
+            flex-grow: 1;
+        }
+
+        .caret {
+            flex-grow: 0;
+            font-size: 2rem;
+            color: $header-caret-colour;
+            transform: scale(1, 1.3);
+
+            &.collapsed {
+                transform: scale(1.3, 1) rotate(90deg);
+            }
+        }
+    }
+
+     .closed-bar {
+        background-color: #f5f5f5;
+        border:  $row-border;
     }
 
     .grid-pattern {
@@ -589,7 +737,7 @@
 
     text.icon {
         font-family: Icons;
-        color: white;
+        color: $white;
         text-shadow: 0 0 1px rgba(0,0,0,0.5);
     }
 
