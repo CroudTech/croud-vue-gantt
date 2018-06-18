@@ -44,7 +44,7 @@
                     </svg>
                 </div>
                     <div v-for="(i, rootIndex) in groupByData" :key="rootIndex" :style="{height: `${i.show ? i.height + getTopMargin : getTopMargin}px`}">
-                        <svg ref="svg" id="timeline-events" :width="svgWidth" :height="i.show ? i.height + getTopMargin : 0"  v-if="i.show">
+                        <svg ref="svg" id="timeline-events" :width="svgWidth" :height="i.show ? i.height + getTopMargin : 0"  v-show="i.show">
                             <g>
                                 <g>
                                     <rect @click="i.show = false" x="0" :y="0" width="100%" fill="transparent" :height="blockHeight" stroke="#eceaef" stroke-width="2"></rect>
@@ -92,7 +92,7 @@
                                 </g>
                             </g>
                         </svg>
-                        <div v-else class="closed-bar" :style="{width: `${svgWidth}px`, height: `${blockHeight}px`}" @click="i.show = !i.show"></div>
+                        <div v-show="!i.show" class="closed-bar" :style="{width: `${svgWidth}px`, height: `${blockHeight}px`}" @click="i.show = !i.show"></div>
                     </div>
                 </div>
             </div>
