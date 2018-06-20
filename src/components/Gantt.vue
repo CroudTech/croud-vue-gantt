@@ -455,16 +455,13 @@
                     this.$refs.ctxMenu.forEach((menu) => {
                         menu.ctxVisible = false
                     })
-                    this.$refs.ctxMenu[$index].open({
-                        pageX: e.offsetX,
-                        pageY: e.offsetY - 25,
-                    })
-                } else {
-                    this.$refs.ctxMenu[$index].open({
-                        pageX: e.offsetX,
-                        pageY: e.offsetY - 25,
-                    })
                 }
+                this.$refs.ctxMenu[$index].open(e)
+
+                this.$nextTick(() => {
+                    this.$refs.ctxMenu[$index].ctxLeft = e.offsetX
+                    this.$refs.ctxMenu[$index].ctxTop = e.offsetY
+                })
             },
 
             collide(e) {
@@ -669,7 +666,7 @@
     #timeline {
         width: 100%;
         display: block;
-        padding-bottom: 10px;
+        padding-bottom: 2em;
         overflow-x: scroll;
     }
     #event-types {
@@ -682,7 +679,6 @@
     }
     #timeline-events {
         overflow: visible;
-        overflow-x: scroll;
     }
     #timeline-index {
         height:30px;
