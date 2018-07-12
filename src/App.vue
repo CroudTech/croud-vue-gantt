@@ -1,11 +1,22 @@
 <template>
   <div id="app">
-    <gantt :calculate="false" :events="ganttData" :end-period="endPeriod" :start-period="startPeriod" @load-more="loadMore" @selected="selected" :grouping="true" :show-repeats="repeats" :status-colors="{
+    <gantt
+    :grow="true"
+    :events="ganttData"
+    :end-period="endPeriod"
+    :start-period="startPeriod"
+    @load-more="loadMore"
+    @selected="selected"
+    :grouping="true"
+    :show-repeats="repeats"
+    :status-colors="{
         complete: '#8bccba',
         active: '#6bc2e2',
         in_progress: '#fbbd08',
-    }" :readOnly="false"
+    }"
+    :readOnly="false"
     :category-groupings="group">
+
         <template slot="context-menu" scope="scope">
             <li @click="selected(scope.selected)" class="item">
                 <i class="edit icon"></i>View
