@@ -35,9 +35,9 @@
                                             <text text-anchor="middle" :x="($index - 1) * hourWidth + titleWidth" y="10">{{ line }}</text>
                                         </g>
 
-                                        <foreignObject :x='svgWidth - 500' width="1" height="100%" v-if="inifinteScroll">
+                                        <!-- <foreignObject :x='svgWidth - 500' width="1" height="100%">
                                             <v-waypoint @waypoint="collide" :horizontal="true"></v-waypoint>
-                                        </foreignObject>
+                                        </foreignObject> -->
                                     </g>
                                 </g>
                             </g>
@@ -66,7 +66,8 @@
                                         <g class="block" v-for="(block, $index) in i.blocks" :key="$index">
                                             <title>{{ block.title }}</title>
 
-                                            <rect @contextmenu.prevent="openContext($event, block, rootIndex)" @click="select(block, $index)" @mousedown="adjustStart(block, $event)" rx="2" ry="2" :x="block.x" :y='block.y' :width='block.width' :height='block.height' :class="{editable: !readOnly && !block.readOnly}" :style="{fill: block.label}">
+                                            <!-- <rect @contextmenu.prevent="openContext($event, block, rootIndex)" @click="select(block, $index)" @mousedown="adjustStart(block, $event)" rx="2" ry="2" :x="block.x" :y='block.y' :width='block.width' :height='block.height' :class="{editable: !readOnly && !block.readOnly}" :style="{fill: block.label}"> -->
+                                            <rect @click="select(block, $index)" @mousedown="adjustStart(block, $event)" rx="2" ry="2" :x="block.x" :y='block.y' :width='block.width' :height='block.height' :class="{editable: !readOnly && !block.readOnly}" :style="{fill: block.label}">
                                                 <title v-if="block.readOnly" >🔒{{ block.readOnly }}</title>
                                                 <title v-else>{{ block.title }}</title>
                                             </rect>
@@ -79,7 +80,7 @@
                                             </rect>
                                         </g>
 
-                                        <foreignObject>
+                                        <!-- <foreignObject>
                                             <context-menu ref="ctxMenu">
                                                 <slot name="context-menu" :selected="localSelected">
                                                     <li @click="$emit('selected', localSelected)" class="item">
@@ -87,7 +88,7 @@
                                                     </li>
                                                 </slot>
                                             </context-menu>
-                                        </foreignObject>
+                                        </foreignObject> -->
                                     </g>
                                 </g>
                             </g>
@@ -103,7 +104,7 @@
 <script>
     import moment from 'moment'
     import { cloneDeep } from 'lodash'
-    import contextMenu from 'vue-context-menu'
+    // import contextMenu from 'vue-context-menu'
 
     export default {
         props: {
@@ -112,40 +113,44 @@
                     return moment().add(1, 'months')
                 },
             },
+
             startPeriod: {
                 default() {
                     return moment().startOf('week')
                 },
             },
-            calculate: {
-                default: false,
-            },
-            selected: {
-                twoWay: true,
-            },
-            autoScale: {
-                default: false,
-            },
-            criticalPath: {
-                default: true,
-            },
-            active: false,
+            // calculate: {
+            //     default: false,
+            // },
+            // selected: {
+            //     twoWay: true,
+            // },
+            // autoScale: {
+            //     default: false,
+            // },
+            // criticalPath: {
+            //     default: true,
+            // },
+            // active: false,
+
             events: {
                 default() {
                     return []
                 },
             },
+
             grouping: {
                 default: true,
             },
-            inifinteScroll: {
-                default: false,
-            },
-            grow: {
-                default: false,
-            },
+            // inifinteScroll: {
+            //     default: false,
+            // },
+            // grow: {
+            //     default: false,
+            // },
+
             showRepeats: {
-                default: false,
+                default: true,
             },
 
             statusColors: {
@@ -171,33 +176,34 @@
         },
 
         components: {
-            contextMenu,
+            // contextMenu,
         },
 
         data() {
             return {
-                selected_index: null,
-                showModal: false,
-                search: '',
-                xPadding: 3,
+                // selected_index: null, not used?
+                // showModal: false, not used?
+                // search: '', not used?
+                // xPadding: 3,
                 links: [],
-                finalBlock: {},
-                highestDuration: 0,
+                // finalBlock: {},  not used?
+                // highestDuration: 0, not used?
                 hourWidth: 29.1,
-                totalWidth: 873 - 120,
+                // totalWidth: 873 - 120,
                 blockHeight: 35,
                 scale: 'days',
                 scaleWidth: 29.1,
                 groupings: [],
-                categories: [],
-                category: null,
-                categoryWidth: 300,
+                // categories: [],
+                // category: null,
+                // categoryWidth: 300,
 
                 titleWidth: 0,
                 topMargin: 35,
                 localSelected: null,
                 cloned: null,
                 groupByData: [],
+                defaultObject: { misc: [] },
             }
         },
 
@@ -205,9 +211,9 @@
             svgWidth() {
                 // if (!this.calculate) return 0
 
-                if (this.autoScale) {
-                    return '100%'
-                }
+                // if (this.autoScale) {
+                //     return '100%'
+                // }
                 if (!this.hourWidth || !this.limits.range) return 0
 
                 return (this.hourWidth * this.limits.range) + 200
@@ -267,12 +273,13 @@
                     units: this.scale,
                 }
 
-                this.events.map((event) => {
-                    if (this.grow && (limits.end === false || moment(event.end).isAfter(limits.end))) {
-                        limits.end = moment(event.end).endOf('week')
-                    }
-                    return event
-                })
+                // Still needed?
+                // this.events.map((event) => {
+                //     if (this.grow && (limits.end === false || moment(event.end).isAfter(limits.end))) {
+                //         limits.end = moment(event.end).endOf('week')
+                //     }
+                //     return event
+                // })
 
                 limits.range = Math.ceil(limits.end.diff(limits.start, this.scale))
 
@@ -283,71 +290,19 @@
                 return this.limits.actualStart.diff(this.limits.start, 'days') - 1
             },
 
-            repeats() {
-                // const preset_labels = this.preset_labels
-                const inst = this
-                // const withRepeats = []
-                const masterEvents = []
-                // const children = []
-
-                this.events.map((curr, index) => {
-                    // const newEvent = _.cloneDeep(curr)
-                    // newEvent.repeat = true
-                    curr.selected_event_index = index
+            processedEvents() {
+                const processedEvents = this.events.map((curr) => {
+                    curr.label = this.getStatusColour(curr)
                     curr.children = []
 
-                    // curr.label = preset_labels[curr.preset_id]
-                    curr.label = this.statusColors[curr.status]
-
                     if (!this.showRepeats || !curr.frequency) {
-                        masterEvents.push(curr)
                         return curr
                     }
 
-                    switch (curr.frequency.key) {
-                    case 'daily':
-                            // curr.label = '#0B8043'
-                        curr.children = inst.addRepeats(curr, 1, 'days')
-                        break
-
-                    case 'every_work_day':
-                            // curr.label = '#880022'
-                        curr.children = inst.addRepeats(curr, 1, 'every_work_day')
-                        break
-
-                    case 'weekly':
-                            // curr.label = '#EE8100'
-                        curr.children = inst.addRepeats(curr, 1, 'weeks')
-                        break
-
-                    case 'four_weekly':
-                            // curr.label = '#DB4437'
-                        curr.children = inst.addRepeats(curr, 4, 'weeks')
-                        break
-
-                    case 'fortnightly':
-                            // curr.label = '#DB4437'
-                        curr.children = inst.addRepeats(curr, 2, 'weeks')
-                        break
-
-                    case 'monthly':
-                            // curr.label = '#6A1B9A'
-                        curr.children = inst.addRepeats(curr, 1, 'months')
-                        break
-
-                    case 'Quarterly':
-                            // curr.label = '#C5BBFE'
-                        curr.children = inst.addRepeats(curr, 1, 'quarters')
-                        break
-
-                    default:
-                    }
-
-                    masterEvents.push(curr)
+                    this.processEventRepeats(curr)
                     return curr
                 })
-
-                return masterEvents
+                return processedEvents
             },
 
             getTopMargin() {
@@ -362,9 +317,9 @@
                 }
             },
 
-            currentEvent() {
-                return this.events[this.events.indexOf(this.localSelected)]
-            },
+            // currentEvent() {
+            //     return this.events[this.events.indexOf(this.localSelected)]
+            // },
         },
 
         filters: {
@@ -377,66 +332,84 @@
         },
 
         methods: {
-            buildGroupByData() {
-                const position = this.calculate ? this.calculatedPosition : this.position
-                const titleGroupings = { misc: [] }
-                const links = { misc: [] }
-                const startObj = cloneDeep(this.categoryGroupings && this.categoryGroupings !== true ? this.categoryGroupings : { misc: [] })
+            processEventRepeats(curr) {
+                switch (curr.frequency.key) {
+                case 'daily':
+                    curr.children = this.addRepeats(curr, 1, 'days')
+                    break
 
-                const processNodes = this.repeats.reduce((grouped, item, i, array, sortKey = item.group_by) => {
+                case 'every_work_day':
+                    curr.children = this.addRepeats(curr, 1, 'every_work_day')
+                    break
+
+                case 'weekly':
+                    curr.children = this.addRepeats(curr, 1, 'weeks')
+                    break
+
+                case 'four_weekly':
+                    curr.children = this.addRepeats(curr, 4, 'weeks')
+                    break
+
+                case 'fortnightly':
+                    curr.children = this.addRepeats(curr, 2, 'weeks')
+                    break
+
+                case 'monthly':
+                    curr.children = this.addRepeats(curr, 1, 'months')
+                    break
+
+                case 'Quarterly':
+                    curr.children = this.addRepeats(curr, 1, 'quarters')
+                    break
+
+                default:
+                }
+                return curr
+            },
+
+            getStatusColour(event) {
+                return this.statusColors[event.status]
+            },
+
+            buildGroupByData() {
+                const titleGroupings = cloneDeep(this.defaultObject)
+                const links = cloneDeep(this.defaultObject)
+                const startObj = cloneDeep(this.categoryGroupings && this.categoryGroupings !== true ? this.categoryGroupings : this.defaultObject)
+
+                const processNodes = this.processedEvents.reduce((grouped, item, i, array, sortKey = item.group_by) => {
+                    // define category groups
                     if (this.categoryGroupings === true && sortKey) {
                         grouped[sortKey] = grouped[sortKey] || []
                     }
 
+                    // define group, push items
                     const computedSortKey = grouped[sortKey] ? sortKey : 'misc'
-
                     const group = grouped[computedSortKey]
                     if (group.indexOf(item) === -1) group.push(item)
 
+                    // push grouped titles for sidebar
                     titleGroupings[computedSortKey] = titleGroupings[computedSortKey] || []
-
                     let index = titleGroupings[computedSortKey].indexOf(item.title.toLowerCase())
                     if (index === -1) {
                         index = titleGroupings[computedSortKey].length
                         titleGroupings[computedSortKey].push(item.title.toLowerCase())
                     }
+
+                    // Other item fields to be processed
                     item.event_index = this.grouping ? index : i
 
-                    if (this.showRepeats && item.children && item.children.length) {
-                        item.children.map((ch) => {
-                            ch.event_index = index
-                            position(ch)
-                            return ch
-                        })
-                    }
+                    this.getChildPositions(item, index)
 
-                    if (item.dependencies) {
-                        links[computedSortKey] = links[computedSortKey] || []
-                        item.dependencies.map((dep) => {
-                            links[computedSortKey].push([
-                                this.events[dep],
-                                item,
-                            ])
+                    this.getItemLinks(computedSortKey, item, links)
 
-                            return dep
-                        })
-                    }
+                    this.position(item)
 
-                    position(item)
-
+                    console.log(grouped)
                     return grouped
                 }, startObj)
 
-                const filteredGroups = {}
-                Object.keys(processNodes).forEach((prop) => {
-                    if (prop !== 'misc' && processNodes[prop].length) { filteredGroups[prop] = processNodes[prop] }
-                })
-
-                if (processNodes.misc && processNodes.misc.length) {
-                    filteredGroups.misc = processNodes.misc
-                }
-
                 const clonedGroupByData = cloneDeep(this.groupByData)
+                const filteredGroups = this.getFilteredGroups(processNodes)
 
                 this.groupByData = Object.keys(filteredGroups).map(group => ({
                     title: group,
@@ -446,35 +419,86 @@
                     show: clonedGroupByData.length && clonedGroupByData.map(g => g.title).indexOf(group) > -1 ? clonedGroupByData[clonedGroupByData.map(g => g.title).indexOf(group)].show : true,
                     height: titleGroupings[group].length * (this.blockHeight),
                 }))
+                console.log(this.groupByData)
             },
 
-            openContext(e, block, $index) {
-                this.localSelected = block
+            getItemLinks(computedSortKey, item, links) {
+                if (!item.dependencies) return
 
-                if (this.$refs.ctxMenu.length > 1) {
-                    this.$refs.ctxMenu.forEach((menu) => {
-                        menu.ctxVisible = false
-                    })
-                }
-                this.$refs.ctxMenu[$index].open(e)
+                links[computedSortKey] = links[computedSortKey] || []
+                item.dependencies.map((dep) => {
+                    links[computedSortKey].push([
+                        this.events[dep],
+                        item,
+                    ])
 
-                this.$nextTick(() => {
-                    this.$refs.ctxMenu[$index].ctxLeft = e.offsetX
-                    this.$refs.ctxMenu[$index].ctxTop = e.offsetY
+                    return dep
                 })
             },
 
+            getChildPositions(item, index) {
+                if (!(this.showRepeats && item.children && item.children.length)) return
+                item.children.map((ch) => {
+                    ch.event_index = index
+                    this.position(ch)
+                    return ch
+                })
+            },
+
+            getFilteredGroups(processNodes) {
+                if (!processNodes) return []
+
+                const filteredGroups = {}
+
+                Object.keys(processNodes).forEach((prop) => {
+                    if (prop !== 'misc' && processNodes[prop].length) { filteredGroups[prop] = processNodes[prop] }
+                })
+
+                if ((!processNodes.misc && processNodes.misc.length)) return filteredGroups
+
+                filteredGroups.misc = processNodes.misc
+                return filteredGroups
+            },
+
+            // getTitleGroupings(computedSortKey) {
+            //     const titleGroupings = cloneDeep(defaultObject)
+            //     titleGroupings[computedSortKey] = titleGroupings[computedSortKey] || []
+
+            //     let index = titleGroupings[computedSortKey].indexOf(item.title.toLowerCase())
+            //     if (index === -1) {
+            //         index = titleGroupings[computedSortKey].length
+            //         titleGroupings[computedSortKey].push(item.title.toLowerCase())
+            //     }
+            // },
+
+            // openContext(e, block, $index) {
+            //     this.localSelected = block
+
+            //     if (this.$refs.ctxMenu.length > 1) {
+            //         this.$refs.ctxMenu.forEach((menu) => {
+            //             menu.ctxVisible = false
+            //         })
+            //     }
+            //     this.$refs.ctxMenu[$index].open(e)
+
+            //     this.$nextTick(() => {
+            //         this.$refs.ctxMenu[$index].ctxLeft = e.offsetX
+            //         this.$refs.ctxMenu[$index].ctxTop = e.offsetY
+            //     })
+            // },
+
+            // used in conjunction with vue-way point, infinite horiz scroll
             collide(e) {
                 this.$emit('load-more', e)
             },
 
-            calculatedPosition(event) {
-                event.x = (moment(event.start).diff(this.limits.start, this.scale)) * this.scaleWidth
-                event.width = ((moment(event.end).diff(event.start, this.scale)) + 1) * this.scaleWidth
-                event.height = this.blockHeight - 15
-                event.y = (event.event_index * this.blockHeight) + 7.5
-                return event
-            },
+            // calculatedPosition(event) {
+            //     event.x = (moment(event.start).diff(this.limits.start, this.scale)) * this.scaleWidth
+            //     event.width = ((moment(event.end).diff(event.start, this.scale)) + 1) * this.scaleWidth
+            //     event.height = this.blockHeight - 15
+            //     event.y = (event.event_index * this.blockHeight) + 7.5
+            //     return event
+            // },
 
             position(event) {
                 event.page = event.page || 1
@@ -516,8 +540,6 @@
                 const diff = Math.round((evt.clientX - this.startMouse.clientX) / this.scaleWidth)
 
                 if (Math.abs(diff)) {
-                    const position = this.calculate ? this.calculatedPosition : this.position
-
                     if (this.dragging === 'start') {
                         this.cloned.offset += diff
                         this.cloned.starts_at = moment(this.cloned.starts_at).add(diff, 'days').format('YYYY-MM-DD')
@@ -526,7 +548,7 @@
                     }
 
                     this.cloned.ends_at = moment(this.cloned.ends_at).add(diff, 'days').format('YYYY-MM-DD')
-                    position(this.cloned)
+                    this.position(this.cloned)
                     this.localSelected.offset = this.cloned.offset
                     this.localSelected.starts_at = this.cloned.starts_at
                     this.localSelected.duration = this.cloned.duration
@@ -566,7 +588,6 @@
                     newEvent.end = moment(newEvent.end)
 
                     if (interval > 0) { newEvent.end.add(i, actualUnit) }
-                    // if (i + this.limits.end.diff(event.start, 'days') > diff) return
 
                     if (units === 'every_work_day') {
                         while (newEvent.start.day() === 0 || newEvent.start.day() === 6) {
@@ -589,7 +610,7 @@
 
         watch: {
             groupings: 'buildGroupByData',
-            repeats: 'buildGroupByData',
+            processedEvents: 'buildGroupByData',
         },
     }
 </script>
