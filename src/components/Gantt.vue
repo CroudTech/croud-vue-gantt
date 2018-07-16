@@ -35,9 +35,9 @@
                                             <text text-anchor="middle" :x="($index - 1) * hourWidth + titleWidth" y="10">{{ line }}</text>
                                         </g>
 
-                                        <!-- <foreignObject :x='svgWidth - 500' width="1" height="100%">
+                                        <foreignObject v-if="inifinteScroll" :x='svgWidth - 500' width="1" height="100%">
                                             <v-waypoint @waypoint="collide" :horizontal="true"></v-waypoint>
-                                        </foreignObject> -->
+                                        </foreignObject>
                                     </g>
                                 </g>
                             </g>
@@ -66,8 +66,7 @@
                                         <g class="block" v-for="(block, $index) in i.blocks" :key="$index">
                                             <title>{{ block.title }}</title>
 
-                                            <!-- <rect @contextmenu.prevent="openContext($event, block, rootIndex)" @click="select(block, $index)" @mousedown="adjustStart(block, $event)" rx="2" ry="2" :x="block.x" :y='block.y' :width='block.width' :height='block.height' :class="{editable: !readOnly && !block.readOnly}" :style="{fill: block.label}"> -->
-                                            <rect @click="select(block, $index)" @mousedown="adjustStart(block, $event)" rx="2" ry="2" :x="block.x" :y='block.y' :width='block.width' :height='block.height' :class="{editable: !readOnly && !block.readOnly}" :style="{fill: block.label}">
+                                            <rect @contextmenu.prevent="openContext($event, block, rootIndex)" @click="select(block, $index)" @mousedown="adjustStart(block, $event)" rx="2" ry="2" :x="block.x" :y='block.y' :width='block.width' :height='block.height' :class="{editable: !readOnly && !block.readOnly}" :style="{fill: block.label}">
                                                 <title v-if="block.readOnly" >🔒{{ block.readOnly }}</title>
                                                 <title v-else>{{ block.title }}</title>
                                             </rect>
@@ -80,7 +79,7 @@
                                             </rect>
                                         </g>
 
-                                        <!-- <foreignObject>
+                                        <foreignObject>
                                             <context-menu ref="ctxMenu">
                                                 <slot name="context-menu" :selected="localSelected">
                                                     <li @click="$emit('selected', localSelected)" class="item">
@@ -88,7 +87,7 @@
                                                     </li>
                                                 </slot>
                                             </context-menu>
-                                        </foreignObject> -->
+                                        </foreignObject>
                                     </g>
                                 </g>
                             </g>
@@ -104,63 +103,29 @@
 <script>
     import moment from 'moment'
     import { cloneDeep } from 'lodash'
-    // import contextMenu from 'vue-context-menu'
+    import contextMenu from 'vue-context-menu'
 
     export default {
         props: {
+            startPeriod: {
+                default() {
+                    return moment().startOf('week')
+                },
+            },
+
             endPeriod: {
                 default() {
                     return moment().add(1, 'months')
                 },
             },
 
-            startPeriod: {
-                default() {
-                    return moment().startOf('week')
-                },
+            autoScale: {
+                default: false,
             },
-            // calculate: {
-            //     default: false,
-            // },
-            // selected: {
-            //     twoWay: true,
-            // },
-            // autoScale: {
-            //     default: false,
-            // },
-            // criticalPath: {
-            //     default: true,
-            // },
-            // active: false,
 
             events: {
                 default() {
                     return []
-                },
-            },
-
-            grouping: {
-                default: true,
-            },
-            // inifinteScroll: {
-            //     default: false,
-            // },
-            // grow: {
-            //     default: false,
-            // },
-
-            showRepeats: {
-                default: true,
-            },
-
-            statusColors: {
-                type: Object,
-                default() {
-                    return {
-                        complete: '#8bccba',
-                        active: '#6bc2e2',
-                        in_progress: '#fbbd08',
-                    }
                 },
             },
 
@@ -173,47 +138,73 @@
                 type: [Boolean, Object],
                 default: false,
             },
+
+            grouping: {
+                default: true,
+            },
+
+            inifinteScroll: {
+                default: false,
+            },
+
+            showRepeats: {
+                default: true,
+            },
+
+            statusColors: {
+                type: Object,
+                default() {
+                    return {
+                        complete: '#8bccba',
+                        active: '#6bc2e2',
+                        in_progress: '#fbbd08',
+
+                    }
+                },
+            },
+
+            fallbackCategory: {
+                type: String,
+                default: 'misc',
+            },
+
+
+            defaultObject: {
+                type: Object,
+                default() {
+                    const obj = {}
+                    obj[this.fallbackCategory.toLowerCase()] = []
+                    return obj
+                },
+            },
         },
 
         components: {
-            // contextMenu,
+            contextMenu,
         },
 
         data() {
             return {
-                // selected_index: null, not used?
-                // showModal: false, not used?
-                // search: '', not used?
-                // xPadding: 3,
-                links: [],
-                // finalBlock: {},  not used?
-                // highestDuration: 0, not used?
                 hourWidth: 29.1,
-                // totalWidth: 873 - 120,
                 blockHeight: 35,
                 scale: 'days',
                 scaleWidth: 29.1,
-                groupings: [],
-                // categories: [],
-                // category: null,
-                // categoryWidth: 300,
-
                 titleWidth: 0,
                 topMargin: 35,
                 localSelected: null,
                 cloned: null,
+                links: [],
+                groupings: [],
                 groupByData: [],
-                defaultObject: { misc: [] },
             }
         },
 
         computed: {
             svgWidth() {
-                // if (!this.calculate) return 0
+                if (this.autoScale) {
+                    return '100%'
+                }
 
-                // if (this.autoScale) {
-                //     return '100%'
-                // }
                 if (!this.hourWidth || !this.limits.range) return 0
 
                 return (this.hourWidth * this.limits.range) + 200
@@ -273,14 +264,6 @@
                     units: this.scale,
                 }
 
-                // Still needed?
-                // this.events.map((event) => {
-                //     if (this.grow && (limits.end === false || moment(event.end).isAfter(limits.end))) {
-                //         limits.end = moment(event.end).endOf('week')
-                //     }
-                //     return event
-                // })
-
                 limits.range = Math.ceil(limits.end.diff(limits.start, this.scale))
 
                 return limits
@@ -316,10 +299,6 @@
                     backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='${this.scaleWidth * 7}' height='100' viewBox='0 0 ${this.scaleWidth * 7} 100'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.4'%3E%3Cpath opacity='.5' d='M0 0 H 5 V 100 H 0 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
                 }
             },
-
-            // currentEvent() {
-            //     return this.events[this.events.indexOf(this.localSelected)]
-            // },
         },
 
         filters: {
@@ -368,7 +347,7 @@
             },
 
             getStatusColour(event) {
-                return this.statusColors[event.status]
+                return this.statusColors[event.status] ? this.statusColors[event.status] : this.statusColors.active
             },
 
             buildGroupByData() {
@@ -404,7 +383,7 @@
 
                     this.position(item)
 
-                    console.log(grouped)
+                    // console.log(grouped)
                     return grouped
                 }, startObj)
 
@@ -419,11 +398,11 @@
                     show: clonedGroupByData.length && clonedGroupByData.map(g => g.title).indexOf(group) > -1 ? clonedGroupByData[clonedGroupByData.map(g => g.title).indexOf(group)].show : true,
                     height: titleGroupings[group].length * (this.blockHeight),
                 }))
-                console.log(this.groupByData)
+                // console.log(this.groupByData)
             },
 
             getItemLinks(computedSortKey, item, links) {
-                if (!item.dependencies) return
+                if (!item.dependencies) return []
 
                 links[computedSortKey] = links[computedSortKey] || []
                 item.dependencies.map((dep) => {
@@ -434,15 +413,17 @@
 
                     return dep
                 })
+                return links[computedSortKey]
             },
 
             getChildPositions(item, index) {
-                if (!(this.showRepeats && item.children && item.children.length)) return
+                if (!(this.showRepeats && item.children && item.children.length)) return {}
                 item.children.map((ch) => {
                     ch.event_index = index
                     this.position(ch)
                     return ch
                 })
+                return item
             },
 
             getFilteredGroups(processNodes) {
@@ -471,34 +452,25 @@
             //     }
             // },
 
-            // openContext(e, block, $index) {
-            //     this.localSelected = block
+            openContext(e, block, $index) {
+                this.localSelected = block
 
-            //     if (this.$refs.ctxMenu.length > 1) {
-            //         this.$refs.ctxMenu.forEach((menu) => {
-            //             menu.ctxVisible = false
-            //         })
-            //     }
-            //     this.$refs.ctxMenu[$index].open(e)
+                if (this.$refs.ctxMenu.length > 1) {
+                    this.$refs.ctxMenu.forEach((menu) => {
+                        menu.ctxVisible = false
+                    })
+                }
+                this.$refs.ctxMenu[$index].open(e)
 
-            //     this.$nextTick(() => {
-            //         this.$refs.ctxMenu[$index].ctxLeft = e.offsetX
-            //         this.$refs.ctxMenu[$index].ctxTop = e.offsetY
-            //     })
-            // },
+                this.$nextTick(() => {
+                    this.$refs.ctxMenu[$index].ctxLeft = e.offsetX
+                    this.$refs.ctxMenu[$index].ctxTop = e.offsetY
+                })
+            },
 
-            // used in conjunction with vue-way point, infinite horiz scroll
             collide(e) {
                 this.$emit('load-more', e)
             },
-
-            // calculatedPosition(event) {
-            //     event.x = (moment(event.start).diff(this.limits.start, this.scale)) * this.scaleWidth
-            //     event.width = ((moment(event.end).diff(event.start, this.scale)) + 1) * this.scaleWidth
-            //     event.height = this.blockHeight - 15
-            //     event.y = (event.event_index * this.blockHeight) + 7.5
-            //     return event
-            // },
 
             position(event) {
                 event.page = event.page || 1
@@ -533,7 +505,6 @@
                 this.cloned = cloneDeep(this.localSelected)
             },
 
-            // move: _.debounce(function (evt) {
             move(evt) {
                 if (!this.dragging) return
 
@@ -560,7 +531,6 @@
                         clientX: this.startMouse.clientX + (diff * this.scaleWidth),
                     }
                 }
-            // }, 10),
             },
 
             mouseUp(evt) {
