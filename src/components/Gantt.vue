@@ -362,7 +362,7 @@
                     }
 
                     // define group, push items
-                    const computedSortKey = grouped[sortKey] ? sortKey : 'misc'
+                    const computedSortKey = grouped[sortKey] ? sortKey : this.fallbackCategory.toLowerCase()
                     const group = grouped[computedSortKey]
                     if (group.indexOf(item) === -1) group.push(item)
 
@@ -375,9 +375,9 @@
                     }
 
                     // Other item fields to be processed
-                    item.event_index = this.grouping ? index : i
-
                     this.getChildPositions(item, index)
+
+                    item.event_index = this.grouping ? index : i
 
                     this.getItemLinks(computedSortKey, item, links)
 
@@ -398,7 +398,7 @@
                     show: clonedGroupByData.length && clonedGroupByData.map(g => g.title).indexOf(group) > -1 ? clonedGroupByData[clonedGroupByData.map(g => g.title).indexOf(group)].show : true,
                     height: titleGroupings[group].length * (this.blockHeight),
                 }))
-                // console.log(this.groupByData)
+                console.log(this.groupByData)
             },
 
             getItemLinks(computedSortKey, item, links) {
