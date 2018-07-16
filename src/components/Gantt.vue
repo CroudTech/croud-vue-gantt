@@ -2,7 +2,7 @@
     <div>
         <div id="adpcalendar">
             <div id="timeline-sidebar">
-                <div v-for="(i, index) in groupByData" :key="index" :style="{height: `${i.show ? i.height + getTopMargin : getTopMargin}px`}">
+                <div v-for="(i, index) in ganttData" :key="index" :style="{height: `${i.show ? i.height + getTopMargin : getTopMargin}px`}">
                     <div v-if="categoryGroupings" class="category-header-wrapper" :style="{'height': `${blockHeight}px`}">
                         <slot name="category-header" :data="i">
                             <div class="category-header" @click="i.show = !i.show">
@@ -25,7 +25,7 @@
             </div>
 
             <div id="timeline-container" ref="container" @mousemove="move" @mouseup="mouseUp">
-                <div id="timeline" class="timeline" ref="timeline" :style="{'min-height': `${groupByData.length * blockHeight}px`}">
+                <div id="timeline" class="timeline" ref="timeline" :style="{'min-height': `${ganttData.length * blockHeight}px`}">
                     <div id="timeline-dates" :style="{width: `${svgWidth}px`}">
                      <svg ref="svg" :width="svgWidth" :height='22'>
                             <g>
@@ -43,7 +43,7 @@
                             </g>
                     </svg>
                 </div>
-                    <div v-for="(i, rootIndex) in groupByData" :key="rootIndex" :style="{height: `${i.show ? i.height + getTopMargin : getTopMargin}px`}">
+                    <div v-for="(i, rootIndex) in ganttData" :key="rootIndex" :style="{height: `${i.show ? i.height + getTopMargin : getTopMargin}px`}">
                         <svg ref="svg" id="timeline-events" :width="svgWidth" :height="i.show ? i.height + getTopMargin : 0"  v-show="i.show">
                             <g>
                                 <g>
@@ -195,7 +195,7 @@
                 cloned: null,
                 links: [],
                 groupings: [],
-                groupByData: [],
+                ganttData: [],
             }
         },
 
@@ -212,7 +212,7 @@
 
             linkPaths() {
                 const links = []
-                this.groupByData.forEach((group) => {
+                this.ganttData.forEach((group) => {
                     links.push(group.links.map((link) => {
                         const startX = link[0].x + (link[0].width / 2)
                         const startY = (link[0].y) + link[0].height
@@ -350,10 +350,9 @@
                 return this.statusColors[event.status] ? this.statusColors[event.status] : this.statusColors.active
             },
 
-            buildGroupByData() {
-                const titleGroupings = cloneDeep(this.defaultObject)
-                const links = cloneDeep(this.defaultObject)
+            processGroupedData(titleGroupings, links) {
                 const startObj = cloneDeep(this.categoryGroupings && this.categoryGroupings !== true ? this.categoryGroupings : this.defaultObject)
+                const fallbackCategory = this.fallbackCategory.toLowerCase()
 
                 const processNodes = this.processedEvents.reduce((grouped, item, i, array, sortKey = item.group_by) => {
                     // define category groups
@@ -362,7 +361,12 @@
                     }
 
                     // define group, push items
-                    const computedSortKey = grouped[sortKey] ? sortKey : this.fallbackCategory.toLowerCase()
+                    const computedSortKey = grouped[sortKey] ? sortKey : fallbackCategory
+
+                    if (computedSortKey === fallbackCategory && !grouped[computedSortKey]) {
+                        grouped[computedSortKey] = []
+                    }
+
                     const group = grouped[computedSortKey]
                     if (group.indexOf(item) === -1) group.push(item)
 
@@ -383,22 +387,28 @@
 
                     this.position(item)
 
-                    // console.log(grouped)
                     return grouped
                 }, startObj)
+                return processNodes
+            },
 
-                const clonedGroupByData = cloneDeep(this.groupByData)
-                const filteredGroups = this.getFilteredGroups(processNodes)
+            buildGanttData() {
+                const titleGroupings = cloneDeep(this.defaultObject)
+                const links = cloneDeep(this.defaultObject)
+                const processedGroupedData = this.processGroupedData(titleGroupings, links)
 
-                this.groupByData = Object.keys(filteredGroups).map(group => ({
+                const clonedGanttData = cloneDeep(this.ganttData)
+                const filteredGroups = this.getFilteredGroups(processedGroupedData)
+
+                this.ganttData = Object.keys(filteredGroups).map(group => ({
                     title: group,
                     links: links[group] || [],
                     blocks: filteredGroups[group],
                     groupings: titleGroupings[group],
-                    show: clonedGroupByData.length && clonedGroupByData.map(g => g.title).indexOf(group) > -1 ? clonedGroupByData[clonedGroupByData.map(g => g.title).indexOf(group)].show : true,
+                    show: clonedGanttData.length && clonedGanttData.map(g => g.title).indexOf(group) > -1 ? clonedGanttData[clonedGanttData.map(g => g.title).indexOf(group)].show : true,
                     height: titleGroupings[group].length * (this.blockHeight),
                 }))
-                console.log(this.groupByData)
+                console.log(this.ganttData)
             },
 
             getItemLinks(computedSortKey, item, links) {
@@ -575,12 +585,12 @@
         },
 
         mounted() {
-            this.buildGroupByData()
+            this.buildGanttData()
         },
 
         watch: {
-            groupings: 'buildGroupByData',
-            processedEvents: 'buildGroupByData',
+            groupings: 'buildGanttData',
+            processedEvents: 'buildGanttData',
         },
     }
 </script>

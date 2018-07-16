@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import moment from 'moment'
+import { cloneDeep } from 'lodash'
 import Gantt from '.../../../src/components/Gantt'
 
 const Constructor = Vue.extend(Gantt)
@@ -154,13 +155,7 @@ const getFilteredGroupsTests = {
     'has no groups, show return empty array': {},
 }
 
-describe('test', () => {
-    describe('test', () => {
-        it('should match', () => {
-            expect('test').toEqual('test')
-        })
-    })
-
+describe('Build up methods for groupByData', () => {
     describe('getChildPositions', () => {
         it('sets the event_index and calls the position method for each child event', () => {
             const checkPositionCalled = jest.spyOn(vm, 'position')
@@ -222,6 +217,61 @@ describe('test', () => {
             it(test, () => {
                 const filteredGroups = vm.getFilteredGroups(getFilteredGroupsTests[test])
                 expect(filteredGroups).toMatchSnapshot()
+            })
+        })
+    })
+
+    describe('processGroupedData', () => {
+        it('provides all events in a misc group if categoryGroupings is false (default)', () => {
+            const titleGroupings = cloneDeep(vm.defaultObject)
+            const links = cloneDeep(vm.defaultObject)
+
+            const result = vm.processGroupedData(titleGroupings, links)
+            Vue.nextTick(() => {
+                expect(result).toMatchSnapshot()
+            })
+        })
+
+        it('provides events in groups defined by the events group_by or the fallback category', () => {
+            vm.categoryGroupings = true
+            const titleGroupings = cloneDeep(vm.defaultObject)
+            const links = cloneDeep(vm.defaultObject)
+
+            const result = vm.processGroupedData(titleGroupings, links)
+            Vue.nextTick(() => {
+                expect(result).toMatchSnapshot()
+            })
+        })
+
+        it('provides events in groups defined by the events group_by field', () => {
+            vm.categoryGroupings = true
+            const titleGroupings = cloneDeep(vm.defaultObject)
+            const links = cloneDeep(vm.defaultObject)
+
+            const result = vm.processGroupedData(titleGroupings, links)
+            Vue.nextTick(() => {
+                expect(result).toMatchSnapshot()
+            })
+        })
+
+        it('provides events in groups defined by categoryGroupings prop, if an event group doesnt exist, events are placed in the fallback category', () => {
+            vm.categoryGroupings = { foo: [] }
+            const titleGroupings = cloneDeep(vm.defaultObject)
+            const links = cloneDeep(vm.defaultObject)
+
+            const result = vm.processGroupedData(titleGroupings, links)
+            Vue.nextTick(() => {
+                expect(result).toMatchSnapshot()
+            })
+        })
+    })
+
+    describe('buildGanttData', () => {
+        it('maps data ready for rendering on the gantt', () => {
+            vm.categoryGroupings = true
+            vm.buildGanttData()
+            Vue.nextTick(() => {
+                expect(vm.ganttData).toMatchSnapshot()
             })
         })
     })
