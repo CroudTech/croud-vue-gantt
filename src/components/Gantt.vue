@@ -337,7 +337,7 @@
                     curr.children = this.addRepeats(curr, 1, 'months')
                     break
 
-                case 'Quarterly':
+                case 'quarterly':
                     curr.children = this.addRepeats(curr, 1, 'quarters')
                     break
 
@@ -432,10 +432,10 @@
                 const filteredGroups = {}
 
                 Object.keys(processNodes).forEach((prop) => {
-                    if (prop !== 'misc' && processNodes[prop].length) { filteredGroups[prop] = processNodes[prop] }
+                    if (prop !== this.fallbackCategory && processNodes[prop].length) { filteredGroups[prop] = processNodes[prop] }
                 })
 
-                if ((!processNodes.misc && processNodes.misc.length)) return filteredGroups
+                if (!processNodes[this.fallbackCategory] || (processNodes[this.fallbackCategory] && !processNodes[this.fallbackCategory].length)) return filteredGroups
 
                 filteredGroups.misc = processNodes.misc
                 return filteredGroups

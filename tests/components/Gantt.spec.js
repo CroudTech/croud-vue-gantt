@@ -80,6 +80,80 @@ const statusColourTests = {
     },
 }
 
+const processEventRepeatsTests = {
+    daily: {
+        event: { frequency: { key: 'daily' } },
+        every: 1,
+        period: 'days',
+    },
+    every_work_day: {
+        event: { frequency: { key: 'every_work_day' } },
+        every: 1,
+        period: 'every_work_day',
+    },
+    weekly: {
+        event: { frequency: { key: 'weekly' } },
+        every: 1,
+        period: 'weeks',
+    },
+    four_weekly: {
+        event: { frequency: { key: 'four_weekly' } },
+        every: 4,
+        period: 'weeks',
+    },
+    fortnightly: {
+        event: { frequency: { key: 'fortnightly' } },
+        every: 2,
+        period: 'weeks',
+    },
+    monthly: {
+        event: { frequency: { key: 'monthly' } },
+        every: 1,
+        period: 'months',
+    },
+    quarterly: {
+        event: { frequency: { key: 'quarterly' } },
+        every: 1,
+        period: 'quarters',
+    },
+}
+
+const getFilteredGroupsTests = {
+    'has misc group and an empty group, should return in 3 groups': {
+        misc: [
+        { id: 1, name: 'misc event 1' },
+        { id: 2, name: 'misc event 2' },
+        { id: 3, name: 'misc event 3' },
+        ],
+        firstGroup: [
+            { id: 1, name: 'first group event 1' },
+            { id: 2, name: 'first group event 2' },
+        ],
+        secondGroup: [],
+        thirdGroup: [
+            { id: 1, name: 'third group event 1' },
+        ],
+    },
+    'has an empty misc group, and an empty group, should return 2 groups': {
+        misc: [],
+        firstGroup: [],
+        secondGroup: [
+            { id: 1, name: 'second group event 1' },
+            { id: 1, name: 'second group event 1' },
+        ],
+        thirdGroup: [
+            { id: 1, name: 'third group event 1' },
+        ],
+    },
+    'doesnt have a misc group, should return one group': {
+        firstGroup: [
+            { id: 1, name: 'first group event 1' },
+            { id: 2, name: 'first group event 2' },
+        ],
+    },
+    'has no groups, show return empty array': {},
+}
+
 describe('test', () => {
     describe('test', () => {
         it('should match', () => {
@@ -127,6 +201,27 @@ describe('test', () => {
             })
             Vue.nextTick(() => {
                 expect(links).toMatchSnapshot()
+            })
+        })
+    })
+
+    describe('processEventRepeats', () => {
+        Object.keys(processEventRepeatsTests).forEach((test) => {
+            it(test, () => {
+                const testProps = processEventRepeatsTests[test]
+                const addRepeatsSpy = jest.spyOn(vm, 'addRepeats')
+                vm.processEventRepeats(testProps.event)
+
+                expect(addRepeatsSpy).toHaveBeenCalledWith(testProps.event, testProps.every, testProps.period)
+            })
+        })
+    })
+
+    describe('getFilteredGroups', () => {
+        Object.keys(getFilteredGroupsTests).forEach((test) => {
+            it(test, () => {
+                const filteredGroups = vm.getFilteredGroups(getFilteredGroupsTests[test])
+                expect(filteredGroups).toMatchSnapshot()
             })
         })
     })

@@ -7,7 +7,7 @@ Object {
       "children": Array [],
       "dependencies": Array [],
       "duration": 2,
-      "end": "2018-07-21T17:15:02.394Z",
+      "end": "2018-07-23T12:15:50.037Z",
       "event_index": 5,
       "frequency": Object {
         "key": "weekly",
@@ -15,21 +15,21 @@ Object {
       "group_by": "foo",
       "height": 20,
       "label": "#fbbd08",
-      "offset": 23,
+      "offset": 25,
       "page": 1,
       "repeat": true,
-      "start": "2018-07-21T17:15:02.394Z",
+      "start": "2018-07-23T12:15:50.037Z",
       "status": "in_progress",
       "title": "A New Event",
       "width": 58.2,
-      "x": 640.2,
+      "x": 698.4000000000001,
       "y": 182.5,
     },
     Object {
       "children": Array [],
       "dependencies": Array [],
       "duration": 2,
-      "end": "2018-07-28T17:15:02.394Z",
+      "end": "2018-07-30T12:15:50.037Z",
       "event_index": 5,
       "frequency": Object {
         "key": "weekly",
@@ -37,21 +37,21 @@ Object {
       "group_by": "foo",
       "height": 20,
       "label": "#fbbd08",
-      "offset": 30,
+      "offset": 32,
       "page": 1,
       "repeat": true,
-      "start": "2018-07-28T17:15:02.394Z",
+      "start": "2018-07-30T12:15:50.037Z",
       "status": "in_progress",
       "title": "A New Event",
       "width": 58.2,
-      "x": 843.9000000000001,
+      "x": 902.1,
       "y": 182.5,
     },
     Object {
       "children": Array [],
       "dependencies": Array [],
       "duration": 2,
-      "end": "2018-08-04T17:15:02.394Z",
+      "end": "2018-08-06T12:15:50.038Z",
       "event_index": 5,
       "frequency": Object {
         "key": "weekly",
@@ -59,21 +59,21 @@ Object {
       "group_by": "foo",
       "height": 20,
       "label": "#fbbd08",
-      "offset": 37,
+      "offset": 39,
       "page": 1,
       "repeat": true,
-      "start": "2018-08-04T17:15:02.394Z",
+      "start": "2018-08-06T12:15:50.037Z",
       "status": "in_progress",
       "title": "A New Event",
       "width": 58.2,
-      "x": 1047.6000000000001,
+      "x": 1105.8,
       "y": 182.5,
     },
     Object {
       "children": Array [],
       "dependencies": Array [],
       "duration": 2,
-      "end": "2018-08-11T17:15:02.395Z",
+      "end": "2018-08-13T12:15:50.038Z",
       "event_index": 5,
       "frequency": Object {
         "key": "weekly",
@@ -81,14 +81,14 @@ Object {
       "group_by": "foo",
       "height": 20,
       "label": "#fbbd08",
-      "offset": 44,
+      "offset": 46,
       "page": 1,
       "repeat": true,
-      "start": "2018-08-11T17:15:02.395Z",
+      "start": "2018-08-13T12:15:50.038Z",
       "status": "in_progress",
       "title": "A New Event",
       "width": 58.2,
-      "x": 1251.3,
+      "x": 1309.5,
       "y": 182.5,
     },
   ],
@@ -101,15 +101,88 @@ Object {
   "group_by": "foo",
   "height": 20,
   "label": "#fbbd08",
-  "offset": 16,
+  "offset": 18,
   "page": 1,
   "status": "in_progress",
   "title": "A New Event",
   "width": 58.2,
-  "x": 436.5,
+  "x": 494.70000000000005,
   "y": 42.5,
 }
 `;
+
+exports[`test getFilteredGroups doesnt have a misc group, should return one group 1`] = `
+Object {
+  "firstGroup": Array [
+    Object {
+      "id": 1,
+      "name": "first group event 1",
+    },
+    Object {
+      "id": 2,
+      "name": "first group event 2",
+    },
+  ],
+}
+`;
+
+exports[`test getFilteredGroups has an empty misc group, and an empty group, should return 2 groups 1`] = `
+Object {
+  "secondGroup": Array [
+    Object {
+      "id": 1,
+      "name": "second group event 1",
+    },
+    Object {
+      "id": 1,
+      "name": "second group event 1",
+    },
+  ],
+  "thirdGroup": Array [
+    Object {
+      "id": 1,
+      "name": "third group event 1",
+    },
+  ],
+}
+`;
+
+exports[`test getFilteredGroups has misc group and an empty group, should return in 3 groups 1`] = `
+Object {
+  "firstGroup": Array [
+    Object {
+      "id": 1,
+      "name": "first group event 1",
+    },
+    Object {
+      "id": 2,
+      "name": "first group event 2",
+    },
+  ],
+  "misc": Array [
+    Object {
+      "id": 1,
+      "name": "misc event 1",
+    },
+    Object {
+      "id": 2,
+      "name": "misc event 2",
+    },
+    Object {
+      "id": 3,
+      "name": "misc event 3",
+    },
+  ],
+  "thirdGroup": Array [
+    Object {
+      "id": 1,
+      "name": "third group event 1",
+    },
+  ],
+}
+`;
+
+exports[`test getFilteredGroups has no groups, show return empty array 1`] = `Object {}`;
 
 exports[`test getItemLinks gets linked events 1`] = `
 Object {
@@ -121,7 +194,7 @@ Object {
             "children": Array [],
             "dependencies": Array [],
             "duration": 2,
-            "end": "2018-07-21T17:15:02.395Z",
+            "end": "2018-07-23T12:15:50.038Z",
             "event_index": 2,
             "frequency": Object {
               "key": "weekly",
@@ -129,21 +202,21 @@ Object {
             "group_by": "bar",
             "height": 20,
             "label": "#6bc2e2",
-            "offset": 25,
+            "offset": 27,
             "page": 1,
             "repeat": true,
-            "start": "2018-07-21T17:15:02.395Z",
+            "start": "2018-07-23T12:15:50.038Z",
             "status": "active",
             "title": "Dependent Event",
             "width": 58.2,
-            "x": 698.4000000000001,
+            "x": 756.6,
             "y": 77.5,
           },
           Object {
             "children": Array [],
             "dependencies": Array [],
             "duration": 2,
-            "end": "2018-07-28T17:15:02.395Z",
+            "end": "2018-07-30T12:15:50.038Z",
             "event_index": 2,
             "frequency": Object {
               "key": "weekly",
@@ -151,21 +224,21 @@ Object {
             "group_by": "bar",
             "height": 20,
             "label": "#6bc2e2",
-            "offset": 32,
+            "offset": 34,
             "page": 1,
             "repeat": true,
-            "start": "2018-07-28T17:15:02.395Z",
+            "start": "2018-07-30T12:15:50.038Z",
             "status": "active",
             "title": "Dependent Event",
             "width": 58.2,
-            "x": 902.1,
+            "x": 960.3000000000001,
             "y": 77.5,
           },
           Object {
             "children": Array [],
             "dependencies": Array [],
             "duration": 2,
-            "end": "2018-08-04T17:15:02.395Z",
+            "end": "2018-08-06T12:15:50.039Z",
             "event_index": 2,
             "frequency": Object {
               "key": "weekly",
@@ -173,21 +246,21 @@ Object {
             "group_by": "bar",
             "height": 20,
             "label": "#6bc2e2",
-            "offset": 39,
+            "offset": 41,
             "page": 1,
             "repeat": true,
-            "start": "2018-08-04T17:15:02.395Z",
+            "start": "2018-08-06T12:15:50.039Z",
             "status": "active",
             "title": "Dependent Event",
             "width": 58.2,
-            "x": 1105.8,
+            "x": 1164,
             "y": 77.5,
           },
           Object {
             "children": Array [],
             "dependencies": Array [],
             "duration": 2,
-            "end": "2018-08-11T17:15:02.395Z",
+            "end": "2018-08-13T12:15:50.039Z",
             "event_index": 2,
             "frequency": Object {
               "key": "weekly",
@@ -195,14 +268,14 @@ Object {
             "group_by": "bar",
             "height": 20,
             "label": "#6bc2e2",
-            "offset": 46,
+            "offset": 48,
             "page": 1,
             "repeat": true,
-            "start": "2018-08-11T17:15:02.395Z",
+            "start": "2018-08-13T12:15:50.039Z",
             "status": "active",
             "title": "Dependent Event",
             "width": 58.2,
-            "x": 1309.5,
+            "x": 1367.7,
             "y": 77.5,
           },
         ],
@@ -215,12 +288,12 @@ Object {
         "group_by": "bar",
         "height": 20,
         "label": "#6bc2e2",
-        "offset": 18,
+        "offset": 20,
         "page": 1,
         "status": "active",
         "title": "Dependent Event",
         "width": 58.2,
-        "x": 494.70000000000005,
+        "x": 552.9,
         "y": 77.5,
       },
       Object {
@@ -236,12 +309,12 @@ Object {
         "group_by": "bar",
         "height": 20,
         "label": "#6bc2e2",
-        "offset": 20,
+        "offset": 22,
         "page": 1,
         "status": "active",
         "title": "Another Event",
         "width": 116.4,
-        "x": 552.9,
+        "x": 611.1,
         "y": 112.5,
       },
     ],
@@ -259,13 +332,13 @@ Object {
   "group_by": "",
   "height": 20,
   "label": "#8bccba",
-  "offset": 13,
+  "offset": 15,
   "page": 1,
   "readOnly": true,
   "status": "complete",
   "title": "Line One",
   "width": 116.4,
-  "x": 349.20000000000005,
+  "x": 407.40000000000003,
   "y": 7.5,
 }
 `;
