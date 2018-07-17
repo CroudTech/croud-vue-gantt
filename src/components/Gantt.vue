@@ -353,12 +353,10 @@
                 const fallbackCategory = this.fallbackCategory.toLowerCase()
 
                 const processNodes = this.processedEvents.reduce((grouped, item, i, array, sortKey = item.group_by) => {
-                    // define category groups
                     if (this.categoryGroupings === true && sortKey) {
                         grouped[sortKey] = grouped[sortKey] || []
                     }
 
-                    // define group, push items
                     const computedSortKey = grouped[sortKey] ? sortKey : fallbackCategory
 
                     if (computedSortKey === fallbackCategory && !grouped[computedSortKey]) {
@@ -368,7 +366,6 @@
                     const group = grouped[computedSortKey]
                     if (group.indexOf(item) === -1) group.push(item)
 
-                    // push grouped titles for sidebar
                     titleGroupings[computedSortKey] = titleGroupings[computedSortKey] || []
                     let index = titleGroupings[computedSortKey].indexOf(item.title.toLowerCase())
                     if (index === -1) {
@@ -376,7 +373,6 @@
                         titleGroupings[computedSortKey].push(item.title.toLowerCase())
                     }
 
-                    // Other item fields to be processed
                     this.getChildPositions(item, index)
 
                     item.event_index = this.grouping ? index : i
