@@ -11,7 +11,7 @@ const vm = new Constructor({
         events: [
             {
                 title: 'Line One',
-                offset: moment('16-07-2018').diff(moment().startOf('month').startOf('week'), 'days'),
+                offset: moment('16/07/2018', 'DD/MM/YY').diff(moment().startOf('month').startOf('week'), 'days'),
                 duration: 4,
                 status: 'complete',
                 x: 0,
@@ -21,7 +21,7 @@ const vm = new Constructor({
             },
             {
                 title: 'A New Event',
-                offset: moment('16-07-2018').diff(moment().startOf('month').startOf('week'), 'days') + 3,
+                offset: moment('16/07/2018', 'DD/MM/YYYY').diff(moment().startOf('month').startOf('week'), 'days') + 3,
                 duration: 2,
                 frequency: {
                     key: 'weekly',
@@ -34,7 +34,7 @@ const vm = new Constructor({
             },
             {
                 title: 'Dependent Event',
-                offset: moment('16-07-2018').diff(moment().startOf('month').startOf('week'), 'days') + 5,
+                offset: moment('16/07/2018', 'DD/MM/YYYY').diff(moment().startOf('month').startOf('week'), 'days') + 5,
                 duration: 2,
                 frequency: {
                     key: 'weekly',
@@ -47,7 +47,7 @@ const vm = new Constructor({
             },
             {
                 title: 'Another Event',
-                offset: moment('16-07-2018').diff(moment().startOf('month').startOf('week'), 'days') + 7,
+                offset: moment('16/07/2018', 'DD/MM/YYYY').diff(moment().startOf('month').startOf('week'), 'days') + 7,
                 duration: 4,
                 frequency: {
                     key: 'once',
@@ -226,9 +226,18 @@ describe('Build up data methods/computed props for ganttData', () => {
 
     describe('position', () => {
         it('sets the position data on an event', () => {
-            const result = vm.position(vm.events[0])
-
-            expect(result).toMatchSnapshot()
+            const output = vm.processedEvents
+            output.forEach((e) => {
+                vm.position(e)
+                expect(e.page).toBeGreaterThanOrEqual(1)
+                expect(e.x).toBeGreaterThan(0)
+                expect(e.width).toBeGreaterThan(0)
+                expect(e.height).toBeGreaterThan(0)
+                expect(e.y).toBeGreaterThan(0)
+            })
+            Vue.nextTick(() => {
+                expect(output).toMatchSnapshot()
+            })
         })
     })
 
@@ -290,7 +299,6 @@ describe('Build up data methods/computed props for ganttData', () => {
         })
 
         it('provides events in groups defined by categoryGroupings prop, if an event group doesnt exist, events are placed in the fallback category', () => {
-            vm.categoryGroupings = { foo: [] }
             const titleGroupings = cloneDeep(vm.defaultObject)
             const links = cloneDeep(vm.defaultObject)
 
@@ -302,9 +310,37 @@ describe('Build up data methods/computed props for ganttData', () => {
     })
 
     describe('buildGanttData', () => {
+        vm.categoryGroupings = true
+        vm.buildGanttData()
+
+        vm.ganttData.forEach((group) => {
+            it('sets each groups title', () => {
+                expect(group.title.length).not.toBe(0)
+            })
+
+            it('provides each groups links array', () => {
+                expect(group.links).toBeTruthy()
+            })
+
+            it('provides each groups events array', () => {
+                expect(group.blocks.length).not.toBe(0)
+            })
+
+            it('provides each groups array of titles', () => {
+                expect(group.groupings.length).not.toBe(0)
+            })
+
+            it('sets each groups show property as true', () => {
+                expect(group.show).toBe(true)
+            })
+
+            it('sets each groups height', () => {
+                const expectedHeight = group.groupings.length * (vm.blockHeight)
+                expect(group.height).toBe(expectedHeight)
+            })
+        })
+
         it('maps data ready for rendering on the gantt', () => {
-            vm.categoryGroupings = true
-            vm.buildGanttData()
             Vue.nextTick(() => {
                 expect(vm.ganttData).toMatchSnapshot()
             })
