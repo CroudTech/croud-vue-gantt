@@ -193,8 +193,6 @@
                 topMargin: 35,
                 localSelected: null,
                 cloned: null,
-                links: [],
-                groupings: [],
                 ganttData: [],
             }
         },
@@ -408,7 +406,6 @@
                     show: clonedGanttData.length && clonedGanttData.map(g => g.title).indexOf(group) > -1 ? clonedGanttData[clonedGanttData.map(g => g.title).indexOf(group)].show : true,
                     height: titleGroupings[group].length * (this.blockHeight),
                 }))
-                console.log(this.ganttData)
             },
 
             getItemLinks(computedSortKey, item, links) {
@@ -450,17 +447,6 @@
                 filteredGroups.misc = processNodes.misc
                 return filteredGroups
             },
-
-            // getTitleGroupings(computedSortKey) {
-            //     const titleGroupings = cloneDeep(defaultObject)
-            //     titleGroupings[computedSortKey] = titleGroupings[computedSortKey] || []
-
-            //     let index = titleGroupings[computedSortKey].indexOf(item.title.toLowerCase())
-            //     if (index === -1) {
-            //         index = titleGroupings[computedSortKey].length
-            //         titleGroupings[computedSortKey].push(item.title.toLowerCase())
-            //     }
-            // },
 
             openContext(e, block, $index) {
                 this.localSelected = block
@@ -564,20 +550,23 @@
                     const newEvent = JSON.parse(JSON.stringify(event))
                     newEvent.repeat = true
 
-                    newEvent.start = moment(newEvent.start).add(i, actualUnit)
-                    newEvent.end = moment(newEvent.end)
+                    const start = moment(newEvent.start).add(i, actualUnit)
+                    const end = moment(newEvent.end)
 
-                    if (interval > 0) { newEvent.end.add(i, actualUnit) }
+                    if (interval > 0) { end.add(i, actualUnit) }
 
                     if (units === 'every_work_day') {
-                        while (newEvent.start.day() === 0 || newEvent.start.day() === 6) {
-                            newEvent.start.add(1, 'days')
-                            newEvent.end.add(1, 'days')
+                        while (start.day() === 0 || start.day() === 6) {
+                            start.add(1, 'days')
+                            end.add(1, 'days')
                             i += 1
                         }
                     }
 
+                    newEvent.start = start.format('YYYY-MM-DD')
+                    newEvent.end = end.format('YYYY-MM-DD')
                     newEvent.offset = moment(this.limits.start).add(newEvent.offset, 'days').add(i, actualUnit).diff(moment(this.limits.start), 'days')
+
                     eventList.push(newEvent)
                 }
                 return eventList
@@ -589,7 +578,6 @@
         },
 
         watch: {
-            groupings: 'buildGanttData',
             processedEvents: 'buildGanttData',
         },
     }

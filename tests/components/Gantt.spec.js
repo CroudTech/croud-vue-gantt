@@ -11,7 +11,7 @@ const vm = new Constructor({
         events: [
             {
                 title: 'Line One',
-                offset: moment().diff(moment().startOf('month').startOf('week'), 'days'),
+                offset: moment('16-07-2018').diff(moment().startOf('month').startOf('week'), 'days'),
                 duration: 4,
                 status: 'complete',
                 x: 0,
@@ -21,7 +21,7 @@ const vm = new Constructor({
             },
             {
                 title: 'A New Event',
-                offset: moment().diff(moment().startOf('month').startOf('week'), 'days') + 3,
+                offset: moment('16-07-2018').diff(moment().startOf('month').startOf('week'), 'days') + 3,
                 duration: 2,
                 frequency: {
                     key: 'weekly',
@@ -34,12 +34,12 @@ const vm = new Constructor({
             },
             {
                 title: 'Dependent Event',
-                offset: moment().diff(moment().startOf('month').startOf('week'), 'days') + 5,
+                offset: moment('16-07-2018').diff(moment().startOf('month').startOf('week'), 'days') + 5,
                 duration: 2,
                 frequency: {
                     key: 'weekly',
                 },
-                dependencies: [], // [0, 1],
+                dependencies: [],
                 status: 'active',
                 x: 0,
                 width: 0,
@@ -47,7 +47,7 @@ const vm = new Constructor({
             },
             {
                 title: 'Another Event',
-                offset: moment().diff(moment().startOf('month').startOf('week'), 'days') + 7,
+                offset: moment('16-07-2018').diff(moment().startOf('month').startOf('week'), 'days') + 7,
                 duration: 4,
                 frequency: {
                     key: 'once',
@@ -120,7 +120,7 @@ const processEventRepeatsTests = {
 }
 
 const getFilteredGroupsTests = {
-    'has misc group and an empty group, should return in 3 groups': {
+    'has misc group and an empty group, should return 3 groups': {
         misc: [
         { id: 1, name: 'misc event 1' },
         { id: 2, name: 'misc event 2' },
@@ -152,38 +152,53 @@ const getFilteredGroupsTests = {
             { id: 2, name: 'first group event 2' },
         ],
     },
-    'has no groups, show return empty array': {},
+    'has no groups, should return an empty array': {},
 }
 
-describe('Build up methods for groupByData', () => {
-    describe('getChildPositions', () => {
-        it('sets the event_index and calls the position method for each child event', () => {
-            const checkPositionCalled = jest.spyOn(vm, 'position')
-
-            const index = 5
-            const result = vm.getChildPositions(vm.processedEvents[1], index)
-
-            expect(result).toMatchSnapshot()
-            expect(result.children[0].event_index).toBe(5)
-
-            expect(checkPositionCalled).toHaveBeenCalledTimes(result.children.length)
-            expect(checkPositionCalled).toHaveBeenCalledWith(result.children[0])
-        })
-    })
-
-    describe('position', () => {
-        it('sets the position data on an event', () => {
-            const result = vm.position(vm.events[0])
-
-            expect(result).toMatchSnapshot()
-        })
-    })
-
-    describe('getStatusColour', () => {
-        Object.keys(statusColourTests).forEach((test) => {
+describe('Build up data methods/computed props for ganttData', () => {
+    describe('processEventRepeats', () => {
+        Object.keys(processEventRepeatsTests).forEach((test) => {
             it(test, () => {
-                const result = vm.getStatusColour(statusColourTests[test].event)
-                expect(result).toBe(statusColourTests[test].expectedOutput)
+                const testProps = processEventRepeatsTests[test]
+                const addRepeatsSpy = jest.spyOn(vm, 'addRepeats')
+                vm.processEventRepeats(testProps.event)
+
+                expect(addRepeatsSpy).toHaveBeenCalledWith(testProps.event, testProps.every, testProps.period)
+            })
+        })
+    })
+
+    describe('processedEvents computed prop', () => {
+        it('it sets the label field', () => {
+            const output = vm.processedEvents
+            Vue.nextTick(() => {
+                output.forEach((event) => {
+                    expect(event.label.length).not.toBe(0)
+                })
+            })
+        })
+
+        it('it doesnt sets the event children if showRepeats prop is false', () => {
+            vm.showRepeats = false
+            const output = vm.processedEvents
+            Vue.nextTick(() => {
+                output.forEach((event) => {
+                    expect(event.children.length).toBe(0)
+                })
+            })
+        })
+
+        it('it sets the event children if showRepeats is true, and the frequency key is not once', () => {
+            vm.showRepeats = true
+            const output = vm.processedEvents
+            Vue.nextTick(() => {
+                output.forEach((event) => {
+                    if (event.frequency && event.frequency.key && event.frequency.key !== 'once') {
+                        expect(event.children.length).not.toBe(0)
+                    } else {
+                        expect(event.children.length).toBe(0)
+                    }
+                })
             })
         })
     })
@@ -200,15 +215,35 @@ describe('Build up methods for groupByData', () => {
         })
     })
 
-    describe('processEventRepeats', () => {
-        Object.keys(processEventRepeatsTests).forEach((test) => {
+    describe('getStatusColour', () => {
+        Object.keys(statusColourTests).forEach((test) => {
             it(test, () => {
-                const testProps = processEventRepeatsTests[test]
-                const addRepeatsSpy = jest.spyOn(vm, 'addRepeats')
-                vm.processEventRepeats(testProps.event)
-
-                expect(addRepeatsSpy).toHaveBeenCalledWith(testProps.event, testProps.every, testProps.period)
+                const result = vm.getStatusColour(statusColourTests[test].event)
+                expect(result).toBe(statusColourTests[test].expectedOutput)
             })
+        })
+    })
+
+    describe('position', () => {
+        it('sets the position data on an event', () => {
+            const result = vm.position(vm.events[0])
+
+            expect(result).toMatchSnapshot()
+        })
+    })
+
+    describe('getChildPositions', () => {
+        it('sets the event_index and calls the position method for each child event', () => {
+            const checkPositionCalled = jest.spyOn(vm, 'position')
+
+            const index = 5
+            const result = vm.getChildPositions(vm.processedEvents[1], index)
+
+            expect(result).toMatchSnapshot()
+            expect(result.children[0].event_index).toBe(5)
+
+            expect(checkPositionCalled).toHaveBeenCalledTimes(result.children.length)
+            expect(checkPositionCalled).toHaveBeenCalledWith(result.children[0])
         })
     })
 
