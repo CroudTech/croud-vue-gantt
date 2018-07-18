@@ -440,9 +440,15 @@ describe('Build up data methods/computed props for ganttData', () => {
         })
 
         it('maps data ready for rendering on the gantt', () => {
-            Vue.nextTick(() => {
-                expect(vm.ganttData).toMatchSnapshot()
-            })
+            expect(vm.ganttData).toMatchSnapshot()
+        })
+
+        it('it retains group show property when called on exisiting data', () => {
+            vm.ganttData[vm.ganttData.length - 1].show = false
+
+            vm.buildGanttData()
+
+            expect(vm.ganttData[vm.ganttData.length - 1].show).toBe(false)
         })
     })
 })

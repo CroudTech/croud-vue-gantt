@@ -148,7 +148,7 @@
             },
 
             showRepeats: {
-                default: true,
+                default: false,
             },
 
             statusColors: {
@@ -394,6 +394,8 @@
                 const clonedGanttData = cloneDeep(this.ganttData)
                 const filteredGroups = this.getFilteredGroups(processedGroupedData)
 
+                // console.log(filteredGroups)
+
                 this.ganttData = Object.keys(filteredGroups).map(group => ({
                     title: group,
                     links: links[group] || [],
@@ -402,6 +404,7 @@
                     show: clonedGanttData.length && clonedGanttData.map(g => g.title).indexOf(group) > -1 ? clonedGanttData[clonedGanttData.map(g => g.title).indexOf(group)].show : true,
                     height: titleGroupings[group].length * (this.blockHeight),
                 }))
+                // console.log(this.ganttData)
             },
 
             getItemLinks(computedSortKey, item, links) {
