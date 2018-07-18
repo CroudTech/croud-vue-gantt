@@ -405,7 +405,7 @@
             },
 
             getItemLinks(computedSortKey, item, links) {
-                if (!item.dependencies) return []
+                if (!(item.dependencies && item.dependencies.length)) return []
 
                 links[computedSortKey] = links[computedSortKey] || []
                 item.dependencies.map((dep) => {
@@ -430,7 +430,7 @@
             },
 
             getFilteredGroups(processNodes) {
-                if (!processNodes) return []
+                if (!processNodes && !Object.keys(processNodes).length) return {}
 
                 const filteredGroups = {}
 

@@ -11,12 +11,46 @@ const vm = new Constructor({
         events: [
             {
                 title: 'Line One',
-                offset: moment('16/07/2018', 'DD/MM/YY').diff(moment().startOf('month').startOf('week'), 'days'),
-                duration: 4,
+                offset: moment('16/07/2018', 'DD/MM/YYYY').diff(moment().startOf('month').startOf('week'), 'days'),
+                duration: 3,
                 status: 'complete',
                 x: 0,
                 width: 0,
                 readOnly: true,
+                group_by: '',
+            },
+            {
+                title: 'Line Two',
+                offset: moment('16/07/2018', 'DD/MM/YYYY').diff(moment().startOf('month').endOf('week'), 'days'),
+                duration: 2,
+                frequency: {
+                    key: 'weekly',
+                },
+                status: 'active',
+                x: 0,
+                width: 0,
+                readOnly: false,
+                group_by: '',
+            },
+            {
+                title: 'Line Three',
+                offset: moment('16/07/2018', 'DD/MM/YYYY').diff(moment().startOf('month').endOf('week'), 'days') + 5,
+                duration: 3,
+                status: 'in_progress',
+                x: 0,
+                width: 0,
+                readOnly: false,
+                group_by: '',
+            },
+            {
+                title: 'Line four',
+                offset: moment('16/07/2018', 'DD/MM/YYYY').diff(moment().startOf('month').endOf('week'), 'days') + 10,
+                duration: 4,
+                dependencies: [1],
+                status: '',
+                x: 0,
+                width: 0,
+                readOnly: false,
                 group_by: '',
             },
             {
@@ -52,7 +86,7 @@ const vm = new Constructor({
                 frequency: {
                     key: 'once',
                 },
-                dependencies: [2],
+                dependencies: [5],
                 status: 'active',
                 x: 0,
                 width: 0,
@@ -61,6 +95,8 @@ const vm = new Constructor({
         ],
     },
 }).$mount()
+
+const checkPositionCalled = jest.spyOn(vm, 'position')
 
 const statusColourTests = {
     'status active': {
@@ -76,7 +112,7 @@ const statusColourTests = {
         expectedOutput: vm.statusColors.complete,
     },
     'status doesnt exist, provide fallback': {
-        event: { status: 'blah' },
+        event: { status: 'doesnt exist' },
         expectedOutput: vm.statusColors.active,
     },
 }
@@ -120,11 +156,11 @@ const processEventRepeatsTests = {
 }
 
 const getFilteredGroupsTests = {
-    'has misc group and an empty group, should return 3 groups': {
+    'has a misc group and an empty group, should return 3 groups': {
         misc: [
-        { id: 1, name: 'misc event 1' },
-        { id: 2, name: 'misc event 2' },
-        { id: 3, name: 'misc event 3' },
+            { id: 1, name: 'misc event 1' },
+            { id: 2, name: 'misc event 2' },
+            { id: 3, name: 'misc event 3' },
         ],
         firstGroup: [
             { id: 1, name: 'first group event 1' },
@@ -152,7 +188,7 @@ const getFilteredGroupsTests = {
             { id: 2, name: 'first group event 2' },
         ],
     },
-    'has no groups, should return an empty array': {},
+    'has no groups, should return an empty object': {},
 }
 
 describe('Build up data methods/computed props for ganttData', () => {
@@ -170,29 +206,26 @@ describe('Build up data methods/computed props for ganttData', () => {
 
     describe('processedEvents computed prop', () => {
         it('it sets the label field', () => {
-            const output = vm.processedEvents
             Vue.nextTick(() => {
-                output.forEach((event) => {
-                    expect(event.label.length).not.toBe(0)
+                vm.processedEvents.forEach((event) => {
+                    expect(event.label).toBe(vm.getStatusColour(event))
                 })
             })
         })
 
-        it('it doesnt sets the event children if showRepeats prop is false', () => {
+        it('it doesnt set the event children if showRepeats prop is false', () => {
             vm.showRepeats = false
-            const output = vm.processedEvents
             Vue.nextTick(() => {
-                output.forEach((event) => {
+                vm.processedEvents.forEach((event) => {
                     expect(event.children.length).toBe(0)
                 })
             })
         })
 
-        it('it sets the event children if showRepeats is true, and the frequency key is not once', () => {
+        it('it sets the event children if showRepeats is true and the frequency key is not once', () => {
             vm.showRepeats = true
-            const output = vm.processedEvents
             Vue.nextTick(() => {
-                output.forEach((event) => {
+                vm.processedEvents.forEach((event) => {
                     if (event.frequency && event.frequency.key && event.frequency.key !== 'once') {
                         expect(event.children.length).not.toBe(0)
                     } else {
@@ -204,8 +237,17 @@ describe('Build up data methods/computed props for ganttData', () => {
     })
 
     describe('getItemLinks', () => {
-        it('gets linked events', () => {
-            const links = { misc: [] }
+        it('if item has no dependencies, return an empty array', () => {
+            const item = { title: 'no dependencies' }
+
+            const result = vm.getItemLinks('group', item, {})
+            Vue.nextTick(() => {
+                expect(result).toEqual([])
+            })
+        })
+
+        it('gets linked events for each event with dependencies', () => {
+            const links = cloneDeep(vm.defaultObject)
             vm.processedEvents.forEach((event) => {
                 vm.getItemLinks(event.group_by, event, links)
             })
@@ -242,68 +284,125 @@ describe('Build up data methods/computed props for ganttData', () => {
     })
 
     describe('getChildPositions', () => {
-        it('sets the event_index and calls the position method for each child event', () => {
-            const checkPositionCalled = jest.spyOn(vm, 'position')
-
+        it('if showRepeats is false, return an empty object', () => {
+            vm.showRepeats = false
             const index = 5
+
+            checkPositionCalled.mockClear()
+            const result = vm.getChildPositions(vm.processedEvents[1], index)
+
+            expect(result).toEqual({})
+            expect(result.children).toBeFalsy()
+            expect(checkPositionCalled).not.toBeCalled()
+        })
+
+        it('if an item doesnt have any children, return an empty object', () => {
+            vm.showRepeats = true
+            const index = 5
+
+            checkPositionCalled.mockClear()
+            const result = vm.getChildPositions(vm.processedEvents[0], index)
+
+            expect(result).toEqual({})
+            expect(result.children).toBeFalsy()
+            expect(checkPositionCalled).not.toBeCalled()
+        })
+
+        it('sets the event_index and calls the position method for each child event', () => {
+            const index = 5
+
+            checkPositionCalled.mockClear()
             const result = vm.getChildPositions(vm.processedEvents[1], index)
 
             expect(result).toMatchSnapshot()
             expect(result.children[0].event_index).toBe(5)
-
             expect(checkPositionCalled).toHaveBeenCalledTimes(result.children.length)
             expect(checkPositionCalled).toHaveBeenCalledWith(result.children[0])
         })
     })
 
     describe('getFilteredGroups', () => {
+        it('if processNodes is empty, it returns an empty object', () => {
+            const filteredGroups = vm.getFilteredGroups([])
+            expect(filteredGroups).toEqual({})
+            expect(filteredGroups).toMatchSnapshot()
+        })
+
         Object.keys(getFilteredGroupsTests).forEach((test) => {
             it(test, () => {
                 const filteredGroups = vm.getFilteredGroups(getFilteredGroupsTests[test])
                 expect(filteredGroups).toMatchSnapshot()
             })
         })
+
+        it('it adds the misc group at the end of the object', () => {
+            const groups = {
+                misc: [
+                    { id: 1, name: 'misc event 1' },
+                ],
+                firstGroup: [
+                    { id: 1, name: 'first group event 1' },
+                    { id: 2, name: 'first group event 2' },
+                ],
+                secondGroup: [],
+                thirdGroup: [
+                    { id: 1, name: 'third group event 1' },
+                ],
+            }
+
+            const filteredGroups = vm.getFilteredGroups(groups)
+
+            const objectKeys = Object.keys(filteredGroups)
+            expect(objectKeys[objectKeys.length - 1]).toBe(vm.fallbackCategory)
+        })
     })
 
     describe('processGroupedData', () => {
-        it('provides all events in a misc group if categoryGroupings is false (default)', () => {
+        it('provides all events in the fallbackCategory group if categoryGroupings is false (default)', () => {
+            vm.categoryGroupings = false
             const titleGroupings = cloneDeep(vm.defaultObject)
             const links = cloneDeep(vm.defaultObject)
 
             const result = vm.processGroupedData(titleGroupings, links)
             Vue.nextTick(() => {
+                expect(Object.keys(result).length).toBe(1)
+                expect(result[vm.fallbackCategory]).toBeTruthy()
                 expect(result).toMatchSnapshot()
             })
         })
 
-        it('provides events in groups defined by the events group_by or the fallback category', () => {
+        it('provides events in groups defined by the events group_by field if defined or the fallback category', () => {
             vm.categoryGroupings = true
             const titleGroupings = cloneDeep(vm.defaultObject)
             const links = cloneDeep(vm.defaultObject)
 
             const result = vm.processGroupedData(titleGroupings, links)
             Vue.nextTick(() => {
-                expect(result).toMatchSnapshot()
-            })
-        })
+                Object.keys(titleGroupings).forEach((expectedGroup) => {
+                    expect(result[expectedGroup]).toBeTruthy()
+                })
 
-        it('provides events in groups defined by the events group_by field', () => {
-            vm.categoryGroupings = true
-            const titleGroupings = cloneDeep(vm.defaultObject)
-            const links = cloneDeep(vm.defaultObject)
-
-            const result = vm.processGroupedData(titleGroupings, links)
-            Vue.nextTick(() => {
+                expect(Object.keys(result).length).toBe(Object.keys(titleGroupings).length)
                 expect(result).toMatchSnapshot()
             })
         })
 
         it('provides events in groups defined by categoryGroupings prop, if an event group doesnt exist, events are placed in the fallback category', () => {
-            const titleGroupings = cloneDeep(vm.defaultObject)
-            const links = cloneDeep(vm.defaultObject)
+            vm.categoryGroupings = { bar: [] }
+            const titleGroupings = cloneDeep(vm.categoryGroupings)
+            const links = cloneDeep(vm.categoryGroupings)
 
             const result = vm.processGroupedData(titleGroupings, links)
+
+            const expectedGroups = cloneDeep(vm.categoryGroupings)
+            expectedGroups[vm.fallbackCategory] = []
+
             Vue.nextTick(() => {
+                Object.keys(expectedGroups).forEach((expectedGroup) => {
+                    expect(result[expectedGroup]).toBeTruthy()
+                })
+
+                expect(Object.keys(result).length).toBe(Object.keys(expectedGroups).length)
                 expect(result).toMatchSnapshot()
             })
         })
