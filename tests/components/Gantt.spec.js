@@ -8,10 +8,13 @@ Vue.use(moment)
 
 const vm = new Constructor({
     propsData: {
+        startPeriod: moment('2018-06-30', 'YYYY-MM-DD'),
+        endPeriod: moment('2018-08-18', 'YYYY-MM-DD'),
+
         events: [
             {
                 title: 'Line One',
-                offset: moment('16/07/2018', 'DD/MM/YYYY').diff(moment().startOf('month').startOf('week'), 'days'),
+                offset: 15,
                 duration: 3,
                 status: 'complete',
                 x: 0,
@@ -21,7 +24,7 @@ const vm = new Constructor({
             },
             {
                 title: 'Line Two',
-                offset: moment('16/07/2018', 'DD/MM/YYYY').diff(moment().startOf('month').endOf('week'), 'days'),
+                offset: 8,
                 duration: 2,
                 frequency: {
                     key: 'weekly',
@@ -34,7 +37,7 @@ const vm = new Constructor({
             },
             {
                 title: 'Line Three',
-                offset: moment('16/07/2018', 'DD/MM/YYYY').diff(moment().startOf('month').endOf('week'), 'days') + 5,
+                offset: 13,
                 duration: 3,
                 status: 'in_progress',
                 x: 0,
@@ -44,7 +47,7 @@ const vm = new Constructor({
             },
             {
                 title: 'Line four',
-                offset: moment('16/07/2018', 'DD/MM/YYYY').diff(moment().startOf('month').endOf('week'), 'days') + 10,
+                offset: 18,
                 duration: 4,
                 dependencies: [1],
                 status: '',
@@ -55,7 +58,7 @@ const vm = new Constructor({
             },
             {
                 title: 'A New Event',
-                offset: moment('16/07/2018', 'DD/MM/YYYY').diff(moment().startOf('month').startOf('week'), 'days') + 3,
+                offset: 18,
                 duration: 2,
                 frequency: {
                     key: 'weekly',
@@ -68,7 +71,7 @@ const vm = new Constructor({
             },
             {
                 title: 'Dependent Event',
-                offset: moment('16/07/2018', 'DD/MM/YYYY').diff(moment().startOf('month').startOf('week'), 'days') + 5,
+                offset: 20,
                 duration: 2,
                 frequency: {
                     key: 'weekly',
@@ -81,7 +84,7 @@ const vm = new Constructor({
             },
             {
                 title: 'Another Event',
-                offset: moment('16/07/2018', 'DD/MM/YYYY').diff(moment().startOf('month').startOf('week'), 'days') + 7,
+                offset: 22,
                 duration: 4,
                 frequency: {
                     key: 'once',
@@ -206,23 +209,22 @@ describe('Build up data methods/computed props for ganttData', () => {
 
     describe('processedEvents computed prop', () => {
         it('it sets the label field', () => {
-            Vue.nextTick(() => {
-                vm.processedEvents.forEach((event) => {
-                    expect(event.label).toBe(vm.getStatusColour(event))
-                })
+            vm.processedEvents.forEach((event) => {
+                expect(event.label).toBe(vm.getStatusColour(event))
             })
         })
 
-        it('it doesnt set the event children if showRepeats prop is false', () => {
+        it('it doesnt set the event children if showRepeats prop is false', (done) => {
             vm.showRepeats = false
             Vue.nextTick(() => {
                 vm.processedEvents.forEach((event) => {
                     expect(event.children.length).toBe(0)
                 })
+                done()
             })
         })
 
-        it('it sets the event children if showRepeats is true and the frequency key is not once', () => {
+        it('it sets the event children if showRepeats is true and the frequency key is not once', (done) => {
             vm.showRepeats = true
             Vue.nextTick(() => {
                 vm.processedEvents.forEach((event) => {
@@ -232,27 +234,32 @@ describe('Build up data methods/computed props for ganttData', () => {
                         expect(event.children.length).toBe(0)
                     }
                 })
+                done()
             })
         })
     })
 
     describe('getItemLinks', () => {
-        it('if item has no dependencies, return an empty array', () => {
+        it('if item has no dependencies, return an empty array', (done) => {
             const item = { title: 'no dependencies' }
-
             const result = vm.getItemLinks('group', item, {})
+
             Vue.nextTick(() => {
                 expect(result).toEqual([])
+                done()
             })
         })
 
-        it('gets linked events for each event with dependencies', () => {
+        it('gets linked events for each event with dependencies', (done) => {
             const links = cloneDeep(vm.defaultObject)
+
             vm.processedEvents.forEach((event) => {
                 vm.getItemLinks(event.group_by, event, links)
             })
+
             Vue.nextTick(() => {
                 expect(links).toMatchSnapshot()
+                done()
             })
         })
     })
@@ -267,7 +274,7 @@ describe('Build up data methods/computed props for ganttData', () => {
     })
 
     describe('position', () => {
-        it('sets the position data on an event', () => {
+        it('sets the position data on an event', (done) => {
             const output = vm.processedEvents
             output.forEach((e) => {
                 vm.position(e)
@@ -279,6 +286,7 @@ describe('Build up data methods/computed props for ganttData', () => {
             })
             Vue.nextTick(() => {
                 expect(output).toMatchSnapshot()
+                done()
             })
         })
     })
@@ -358,20 +366,21 @@ describe('Build up data methods/computed props for ganttData', () => {
     })
 
     describe('processGroupedData', () => {
-        it('provides all events in the fallbackCategory group if categoryGroupings is false (default)', () => {
+        it('provides all events in the fallbackCategory group if categoryGroupings is false (default)', (done) => {
             vm.categoryGroupings = false
             const titleGroupings = cloneDeep(vm.defaultObject)
             const links = cloneDeep(vm.defaultObject)
 
             const result = vm.processGroupedData(titleGroupings, links)
             Vue.nextTick(() => {
-                expect(Object.keys(result).length).toBe(1)
+                expect(Object.keys(result).length).not.toBe(0)
                 expect(result[vm.fallbackCategory]).toBeTruthy()
                 expect(result).toMatchSnapshot()
+                done()
             })
         })
 
-        it('provides events in groups defined by the events group_by field if defined or the fallback category', () => {
+        it('provides events in groups defined by the events group_by field if defined or the fallback category', (done) => {
             vm.categoryGroupings = true
             const titleGroupings = cloneDeep(vm.defaultObject)
             const links = cloneDeep(vm.defaultObject)
@@ -384,10 +393,11 @@ describe('Build up data methods/computed props for ganttData', () => {
 
                 expect(Object.keys(result).length).toBe(Object.keys(titleGroupings).length)
                 expect(result).toMatchSnapshot()
+                done()
             })
         })
 
-        it('provides events in groups defined by categoryGroupings prop, if an event group doesnt exist, events are placed in the fallback category', () => {
+        it('provides events in groups defined by categoryGroupings prop, if an event group doesnt exist, events are placed in the fallback category', (done) => {
             vm.categoryGroupings = { bar: [] }
             const titleGroupings = cloneDeep(vm.categoryGroupings)
             const links = cloneDeep(vm.categoryGroupings)
@@ -404,6 +414,7 @@ describe('Build up data methods/computed props for ganttData', () => {
 
                 expect(Object.keys(result).length).toBe(Object.keys(expectedGroups).length)
                 expect(result).toMatchSnapshot()
+                done()
             })
         })
     })
