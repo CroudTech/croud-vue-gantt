@@ -9,12 +9,14 @@ Vue.use(moment)
 const vm = new Constructor({
     propsData: {
         startPeriod: moment('2018-06-30', 'YYYY-MM-DD'),
-        endPeriod: moment('2018-08-18', 'YYYY-MM-DD'),
+        endPeriod: moment('2018-08-01', 'YYYY-MM-DD'),
 
         events: [
             {
                 title: 'Line One',
                 offset: 15,
+                start: '2018-07-15',
+                end: '2018-07-18',
                 duration: 3,
                 status: 'complete',
                 x: 0,
@@ -25,6 +27,8 @@ const vm = new Constructor({
             {
                 title: 'Line Two',
                 offset: 8,
+                start: '2018-07-08',
+                end: '2018-07-10',
                 duration: 2,
                 frequency: {
                     key: 'weekly',
@@ -38,6 +42,8 @@ const vm = new Constructor({
             {
                 title: 'Line Three',
                 offset: 13,
+                start: '2018-07-13',
+                end: '2018-07-16',
                 duration: 3,
                 status: 'in_progress',
                 x: 0,
@@ -48,6 +54,8 @@ const vm = new Constructor({
             {
                 title: 'Line four',
                 offset: 18,
+                start: '2018-07-18',
+                end: '2018-07-22',
                 duration: 4,
                 dependencies: [1],
                 status: '',
@@ -59,6 +67,8 @@ const vm = new Constructor({
             {
                 title: 'A New Event',
                 offset: 18,
+                start: '2018-07-18',
+                end: '2018-07-20',
                 duration: 2,
                 frequency: {
                     key: 'weekly',
@@ -72,6 +82,8 @@ const vm = new Constructor({
             {
                 title: 'Dependent Event',
                 offset: 20,
+                start: '2018-07-20',
+                end: '2018-07-22',
                 duration: 2,
                 frequency: {
                     key: 'weekly',
@@ -85,6 +97,8 @@ const vm = new Constructor({
             {
                 title: 'Another Event',
                 offset: 22,
+                start: '2018-07-22',
+                end: '2018-07-26',
                 duration: 4,
                 frequency: {
                     key: 'once',
