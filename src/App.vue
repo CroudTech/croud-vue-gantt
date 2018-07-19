@@ -1,11 +1,22 @@
 <template>
   <div id="app">
-    <gantt :calculate="false" :events="ganttData" :end-period="endPeriod" :start-period="startPeriod" @load-more="loadMore" @selected="selected" :grouping="true" :show-repeats="repeats" :status-colors="{
+    <gantt
+    :grow="true"
+    :events="ganttData"
+    :end-period="endPeriod"
+    :start-period="startPeriod"
+    @load-more="loadMore"
+    @selected="selected"
+    :grouping="true"
+    :show-repeats="repeats"
+    :status-colors="{
         complete: '#8bccba',
         active: '#6bc2e2',
         in_progress: '#fbbd08',
-    }" :readOnly="false"
+    }"
+    :readOnly="false"
     :category-groupings="group">
+
         <template slot="context-menu" scope="scope">
             <li @click="selected(scope.selected)" class="item">
                 <i class="edit icon"></i>View
@@ -55,11 +66,45 @@ export default {
                 {
                     title: 'Line One',
                     offset: moment().diff(moment().startOf('month').startOf('week'), 'days'),
-                    duration: 4,
+                    duration: 3,
                     status: 'complete',
                     x: 0,
                     width: 0,
                     readOnly: true,
+                    group_by: '',
+                },
+                {
+                    title: 'Line Two',
+                    offset: moment().diff(moment().startOf('month').endOf('week'), 'days'),
+                    duration: 2,
+                    frequency: {
+                        key: 'weekly',
+                    },
+                    status: 'active',
+                    x: 0,
+                    width: 0,
+                    readOnly: false,
+                    group_by: '',
+                },
+                {
+                    title: 'Line Three',
+                    offset: moment().diff(moment().startOf('month').endOf('week'), 'days') + 5,
+                    duration: 3,
+                    status: 'in_progress',
+                    x: 0,
+                    width: 0,
+                    readOnly: false,
+                    group_by: '',
+                },
+                {
+                    title: 'Line four',
+                    offset: moment().diff(moment().startOf('month').endOf('week'), 'days') + 10,
+                    duration: 4,
+                    dependencies: [1],
+                    status: '',
+                    x: 0,
+                    width: 0,
+                    readOnly: false,
                     group_by: '',
                 },
                 {
@@ -82,7 +127,7 @@ export default {
                     frequency: {
                         key: 'weekly',
                     },
-                    dependencies: [], // [0, 1],
+                    dependencies: [],
                     status: 'active',
                     x: 0,
                     width: 0,
@@ -95,7 +140,7 @@ export default {
                     frequency: {
                         key: 'once',
                     },
-                    dependencies: [2],
+                    dependencies: [5],
                     status: 'active',
                     x: 0,
                     width: 0,

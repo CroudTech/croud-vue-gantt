@@ -2,7 +2,7 @@
     <div>
         <div id="adpcalendar">
             <div id="timeline-sidebar">
-                <div v-for="(i, index) in groupByData" :key="index" :style="{height: `${i.show ? i.height + getTopMargin : getTopMargin}px`}">
+                <div v-for="(i, index) in ganttData" :key="index" :style="{height: `${i.show ? i.height + getTopMargin : getTopMargin}px`}">
                     <div v-if="categoryGroupings" class="category-header-wrapper" :style="{'height': `${blockHeight}px`}">
                         <slot name="category-header" :data="i">
                             <div class="category-header" @click="i.show = !i.show">
@@ -25,7 +25,7 @@
             </div>
 
             <div id="timeline-container" ref="container" @mousemove="move" @mouseup="mouseUp">
-                <div id="timeline" class="timeline" ref="timeline" :style="{'min-height': `${groupByData.length * blockHeight}px`}">
+                <div id="timeline" class="timeline" ref="timeline" :style="{'min-height': `${ganttData.length * blockHeight}px`}">
                     <div id="timeline-dates" :style="{width: `${svgWidth}px`}">
                      <svg ref="svg" :width="svgWidth" :height='22'>
                             <g>
@@ -35,7 +35,7 @@
                                             <text text-anchor="middle" :x="($index - 1) * hourWidth + titleWidth" y="10">{{ line }}</text>
                                         </g>
 
-                                        <foreignObject :x='svgWidth - 500' width="1" height="100%" v-if="inifinteScroll">
+                                        <foreignObject v-if="inifinteScroll" :x='svgWidth - 500' width="1" height="100%">
                                             <v-waypoint @waypoint="collide" :horizontal="true"></v-waypoint>
                                         </foreignObject>
                                     </g>
@@ -43,7 +43,7 @@
                             </g>
                     </svg>
                 </div>
-                    <div v-for="(i, rootIndex) in groupByData" :key="rootIndex" :style="{height: `${i.show ? i.height + getTopMargin : getTopMargin}px`}">
+                    <div v-for="(i, rootIndex) in ganttData" :key="rootIndex" :style="{height: `${i.show ? i.height + getTopMargin : getTopMargin}px`}">
                         <svg ref="svg" id="timeline-events" :width="svgWidth" :height="i.show ? i.height + getTopMargin : 0"  v-show="i.show">
                             <g>
                                 <g>
@@ -107,55 +107,25 @@
 
     export default {
         props: {
-            endPeriod: {
-                default() {
-                    return moment().add(1, 'months')
-                },
-            },
             startPeriod: {
                 default() {
                     return moment().startOf('week')
                 },
             },
-            calculate: {
-                default: false,
+
+            endPeriod: {
+                default() {
+                    return moment().add(1, 'months')
+                },
             },
-            selected: {
-                twoWay: true,
-            },
+
             autoScale: {
                 default: false,
             },
-            criticalPath: {
-                default: true,
-            },
-            active: false,
+
             events: {
                 default() {
                     return []
-                },
-            },
-            grouping: {
-                default: true,
-            },
-            inifinteScroll: {
-                default: false,
-            },
-            grow: {
-                default: false,
-            },
-            showRepeats: {
-                default: false,
-            },
-
-            statusColors: {
-                type: Object,
-                default() {
-                    return {
-                        complete: '#8bccba',
-                        active: '#6bc2e2',
-                        in_progress: '#fbbd08',
-                    }
                 },
             },
 
@@ -168,6 +138,45 @@
                 type: [Boolean, Object],
                 default: false,
             },
+
+            grouping: {
+                default: true,
+            },
+
+            inifinteScroll: {
+                default: false,
+            },
+
+            showRepeats: {
+                default: false,
+            },
+
+            statusColors: {
+                type: Object,
+                default() {
+                    return {
+                        complete: '#8bccba',
+                        active: '#6bc2e2',
+                        in_progress: '#fbbd08',
+
+                    }
+                },
+            },
+
+            fallbackCategory: {
+                type: String,
+                default: 'misc',
+            },
+
+
+            defaultObject: {
+                type: Object,
+                default() {
+                    const obj = {}
+                    obj[this.fallbackCategory.toLowerCase()] = []
+                    return obj
+                },
+            },
         },
 
         components: {
@@ -176,38 +185,24 @@
 
         data() {
             return {
-                selected_index: null,
-                showModal: false,
-                search: '',
-                xPadding: 3,
-                links: [],
-                finalBlock: {},
-                highestDuration: 0,
                 hourWidth: 29.1,
-                totalWidth: 873 - 120,
                 blockHeight: 35,
                 scale: 'days',
                 scaleWidth: 29.1,
-                groupings: [],
-                categories: [],
-                category: null,
-                categoryWidth: 300,
-
                 titleWidth: 0,
                 topMargin: 35,
                 localSelected: null,
                 cloned: null,
-                groupByData: [],
+                ganttData: [],
             }
         },
 
         computed: {
             svgWidth() {
-                // if (!this.calculate) return 0
-
                 if (this.autoScale) {
                     return '100%'
                 }
+
                 if (!this.hourWidth || !this.limits.range) return 0
 
                 return (this.hourWidth * this.limits.range) + 200
@@ -215,7 +210,7 @@
 
             linkPaths() {
                 const links = []
-                this.groupByData.forEach((group) => {
+                this.ganttData.forEach((group) => {
                     links.push(group.links.map((link) => {
                         const startX = link[0].x + (link[0].width / 2)
                         const startY = (link[0].y) + link[0].height
@@ -267,13 +262,6 @@
                     units: this.scale,
                 }
 
-                this.events.map((event) => {
-                    if (this.grow && (limits.end === false || moment(event.end).isAfter(limits.end))) {
-                        limits.end = moment(event.end).endOf('week')
-                    }
-                    return event
-                })
-
                 limits.range = Math.ceil(limits.end.diff(limits.start, this.scale))
 
                 return limits
@@ -283,71 +271,19 @@
                 return this.limits.actualStart.diff(this.limits.start, 'days') - 1
             },
 
-            repeats() {
-                // const preset_labels = this.preset_labels
-                const inst = this
-                // const withRepeats = []
-                const masterEvents = []
-                // const children = []
-
-                this.events.map((curr, index) => {
-                    // const newEvent = _.cloneDeep(curr)
-                    // newEvent.repeat = true
-                    curr.selected_event_index = index
+            processedEvents() {
+                const processedEvents = this.events.map((curr) => {
+                    curr.label = this.getStatusColour(curr)
                     curr.children = []
 
-                    // curr.label = preset_labels[curr.preset_id]
-                    curr.label = this.statusColors[curr.status]
-
                     if (!this.showRepeats || !curr.frequency) {
-                        masterEvents.push(curr)
                         return curr
                     }
 
-                    switch (curr.frequency.key) {
-                    case 'daily':
-                            // curr.label = '#0B8043'
-                        curr.children = inst.addRepeats(curr, 1, 'days')
-                        break
-
-                    case 'every_work_day':
-                            // curr.label = '#880022'
-                        curr.children = inst.addRepeats(curr, 1, 'every_work_day')
-                        break
-
-                    case 'weekly':
-                            // curr.label = '#EE8100'
-                        curr.children = inst.addRepeats(curr, 1, 'weeks')
-                        break
-
-                    case 'four_weekly':
-                            // curr.label = '#DB4437'
-                        curr.children = inst.addRepeats(curr, 4, 'weeks')
-                        break
-
-                    case 'fortnightly':
-                            // curr.label = '#DB4437'
-                        curr.children = inst.addRepeats(curr, 2, 'weeks')
-                        break
-
-                    case 'monthly':
-                            // curr.label = '#6A1B9A'
-                        curr.children = inst.addRepeats(curr, 1, 'months')
-                        break
-
-                    case 'Quarterly':
-                            // curr.label = '#C5BBFE'
-                        curr.children = inst.addRepeats(curr, 1, 'quarters')
-                        break
-
-                    default:
-                    }
-
-                    masterEvents.push(curr)
+                    this.processEventRepeats(curr)
                     return curr
                 })
-
-                return masterEvents
+                return processedEvents
             },
 
             getTopMargin() {
@@ -361,10 +297,6 @@
                     backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='${this.scaleWidth * 7}' height='100' viewBox='0 0 ${this.scaleWidth * 7} 100'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.4'%3E%3Cpath opacity='.5' d='M0 0 H 5 V 100 H 0 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z m${this.scaleWidth} 0 h 1 V 100 h -1 Z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
                 }
             },
-
-            currentEvent() {
-                return this.events[this.events.indexOf(this.localSelected)]
-            },
         },
 
         filters: {
@@ -377,75 +309,139 @@
         },
 
         methods: {
-            buildGroupByData() {
-                const position = this.calculate ? this.calculatedPosition : this.position
-                const titleGroupings = { misc: [] }
-                const links = { misc: [] }
-                const startObj = cloneDeep(this.categoryGroupings && this.categoryGroupings !== true ? this.categoryGroupings : { misc: [] })
+            processEventRepeats(curr) {
+                switch (curr.frequency.key) {
+                case 'daily':
+                    curr.children = this.addRepeats(curr, 1, 'days')
+                    break
 
-                const processNodes = this.repeats.reduce((grouped, item, i, array, sortKey = item.group_by) => {
+                case 'every_work_day':
+                    curr.children = this.addRepeats(curr, 1, 'every_work_day')
+                    break
+
+                case 'weekly':
+                    curr.children = this.addRepeats(curr, 1, 'weeks')
+                    break
+
+                case 'four_weekly':
+                    curr.children = this.addRepeats(curr, 4, 'weeks')
+                    break
+
+                case 'fortnightly':
+                    curr.children = this.addRepeats(curr, 2, 'weeks')
+                    break
+
+                case 'monthly':
+                    curr.children = this.addRepeats(curr, 1, 'months')
+                    break
+
+                case 'quarterly':
+                    curr.children = this.addRepeats(curr, 1, 'quarters')
+                    break
+
+                default:
+                }
+                return curr
+            },
+
+            getStatusColour(event) {
+                return this.statusColors[event.status] ? this.statusColors[event.status] : this.statusColors.active
+            },
+
+            processGroupedData(titleGroupings, links) {
+                const startObj = cloneDeep(this.categoryGroupings && this.categoryGroupings !== true ? this.categoryGroupings : this.defaultObject)
+                const fallbackCategory = this.fallbackCategory.toLowerCase()
+
+                const processNodes = this.processedEvents.reduce((grouped, item, i, array, sortKey = item.group_by) => {
                     if (this.categoryGroupings === true && sortKey) {
                         grouped[sortKey] = grouped[sortKey] || []
                     }
 
-                    const computedSortKey = grouped[sortKey] ? sortKey : 'misc'
+                    const computedSortKey = grouped[sortKey] ? sortKey : fallbackCategory
+
+                    if (computedSortKey === fallbackCategory && !grouped[computedSortKey]) {
+                        grouped[computedSortKey] = []
+                    }
 
                     const group = grouped[computedSortKey]
                     if (group.indexOf(item) === -1) group.push(item)
 
                     titleGroupings[computedSortKey] = titleGroupings[computedSortKey] || []
-
                     let index = titleGroupings[computedSortKey].indexOf(item.title.toLowerCase())
                     if (index === -1) {
                         index = titleGroupings[computedSortKey].length
                         titleGroupings[computedSortKey].push(item.title.toLowerCase())
                     }
+
+                    this.getChildPositions(item, index)
+
                     item.event_index = this.grouping ? index : i
 
-                    if (this.showRepeats && item.children && item.children.length) {
-                        item.children.map((ch) => {
-                            ch.event_index = index
-                            position(ch)
-                            return ch
-                        })
-                    }
+                    this.getItemLinks(computedSortKey, item, links)
 
-                    if (item.dependencies) {
-                        links[computedSortKey] = links[computedSortKey] || []
-                        item.dependencies.map((dep) => {
-                            links[computedSortKey].push([
-                                this.events[dep],
-                                item,
-                            ])
-
-                            return dep
-                        })
-                    }
-
-                    position(item)
+                    this.position(item)
 
                     return grouped
                 }, startObj)
+                return processNodes
+            },
 
-                const filteredGroups = {}
-                Object.keys(processNodes).forEach((prop) => {
-                    if (prop !== 'misc' && processNodes[prop].length) { filteredGroups[prop] = processNodes[prop] }
-                })
+            buildGanttData() {
+                const titleGroupings = cloneDeep(this.defaultObject)
+                const links = cloneDeep(this.defaultObject)
+                const processedGroupedData = this.processGroupedData(titleGroupings, links)
 
-                if (processNodes.misc && processNodes.misc.length) {
-                    filteredGroups.misc = processNodes.misc
-                }
+                const clonedGanttData = cloneDeep(this.ganttData)
+                const filteredGroups = this.getFilteredGroups(processedGroupedData)
 
-                const clonedGroupByData = cloneDeep(this.groupByData)
-
-                this.groupByData = Object.keys(filteredGroups).map(group => ({
+                this.ganttData = Object.keys(filteredGroups).map(group => ({
                     title: group,
                     links: links[group] || [],
                     blocks: filteredGroups[group],
                     groupings: titleGroupings[group],
-                    show: clonedGroupByData.length && clonedGroupByData.map(g => g.title).indexOf(group) > -1 ? clonedGroupByData[clonedGroupByData.map(g => g.title).indexOf(group)].show : true,
+                    show: clonedGanttData.length && clonedGanttData.map(g => g.title).indexOf(group) > -1 ? clonedGanttData[clonedGanttData.map(g => g.title).indexOf(group)].show : true,
                     height: titleGroupings[group].length * (this.blockHeight),
                 }))
+            },
+
+            getItemLinks(computedSortKey, item, links) {
+                if (!(item.dependencies && item.dependencies.length)) return []
+
+                links[computedSortKey] = links[computedSortKey] || []
+                item.dependencies.map((dep) => {
+                    links[computedSortKey].push([
+                        this.events[dep],
+                        item,
+                    ])
+
+                    return dep
+                })
+                return links[computedSortKey]
+            },
+
+            getChildPositions(item, index) {
+                if (!(this.showRepeats && item.children && item.children.length)) return {}
+                item.children.map((ch) => {
+                    ch.event_index = index
+                    this.position(ch)
+                    return ch
+                })
+                return item
+            },
+
+            getFilteredGroups(processNodes) {
+                if (!processNodes && !Object.keys(processNodes).length) return {}
+
+                const filteredGroups = {}
+
+                Object.keys(processNodes).forEach((prop) => {
+                    if (prop !== this.fallbackCategory && processNodes[prop].length) { filteredGroups[prop] = processNodes[prop] }
+                })
+
+                if (!processNodes[this.fallbackCategory] || (processNodes[this.fallbackCategory] && !processNodes[this.fallbackCategory].length)) return filteredGroups
+
+                filteredGroups.misc = processNodes.misc
+                return filteredGroups
             },
 
             openContext(e, block, $index) {
@@ -455,28 +451,17 @@
                     this.$refs.ctxMenu.forEach((menu) => {
                         menu.ctxVisible = false
                     })
-                    this.$refs.ctxMenu[$index].open({
-                        pageX: e.offsetX,
-                        pageY: e.offsetY - 25,
-                    })
-                } else {
-                    this.$refs.ctxMenu[$index].open({
-                        pageX: e.offsetX,
-                        pageY: e.offsetY - 25,
-                    })
                 }
+                this.$refs.ctxMenu[$index].open(e)
+
+                this.$nextTick(() => {
+                    this.$refs.ctxMenu[$index].ctxLeft = e.offsetX
+                    this.$refs.ctxMenu[$index].ctxTop = e.offsetY
+                })
             },
 
             collide(e) {
                 this.$emit('load-more', e)
-            },
-
-            calculatedPosition(event) {
-                event.x = (moment(event.start).diff(this.limits.start, this.scale)) * this.scaleWidth
-                event.width = ((moment(event.end).diff(event.start, this.scale)) + 1) * this.scaleWidth
-                event.height = this.blockHeight - 15
-                event.y = (event.event_index * this.blockHeight) + 7.5
-                return event
             },
 
             position(event) {
@@ -512,15 +497,12 @@
                 this.cloned = cloneDeep(this.localSelected)
             },
 
-            // move: _.debounce(function (evt) {
             move(evt) {
                 if (!this.dragging) return
 
                 const diff = Math.round((evt.clientX - this.startMouse.clientX) / this.scaleWidth)
 
                 if (Math.abs(diff)) {
-                    const position = this.calculate ? this.calculatedPosition : this.position
-
                     if (this.dragging === 'start') {
                         this.cloned.offset += diff
                         this.cloned.starts_at = moment(this.cloned.starts_at).add(diff, 'days').format('YYYY-MM-DD')
@@ -529,7 +511,7 @@
                     }
 
                     this.cloned.ends_at = moment(this.cloned.ends_at).add(diff, 'days').format('YYYY-MM-DD')
-                    position(this.cloned)
+                    this.position(this.cloned)
                     this.localSelected.offset = this.cloned.offset
                     this.localSelected.starts_at = this.cloned.starts_at
                     this.localSelected.duration = this.cloned.duration
@@ -541,7 +523,6 @@
                         clientX: this.startMouse.clientX + (diff * this.scaleWidth),
                     }
                 }
-            // }, 10),
             },
 
             mouseUp(evt) {
@@ -565,21 +546,23 @@
                     const newEvent = JSON.parse(JSON.stringify(event))
                     newEvent.repeat = true
 
-                    newEvent.start = moment(newEvent.start).add(i, actualUnit)
-                    newEvent.end = moment(newEvent.end)
+                    const start = moment(newEvent.start).add(i, actualUnit)
+                    const end = moment(newEvent.end)
 
-                    if (interval > 0) { newEvent.end.add(i, actualUnit) }
-                    // if (i + this.limits.end.diff(event.start, 'days') > diff) return
+                    if (interval > 0) { end.add(i, actualUnit) }
 
                     if (units === 'every_work_day') {
-                        while (newEvent.start.day() === 0 || newEvent.start.day() === 6) {
-                            newEvent.start.add(1, 'days')
-                            newEvent.end.add(1, 'days')
+                        while (start.day() === 0 || start.day() === 6) {
+                            start.add(1, 'days')
+                            end.add(1, 'days')
                             i += 1
                         }
                     }
 
+                    newEvent.start = start.format('YYYY-MM-DD')
+                    newEvent.end = end.format('YYYY-MM-DD')
                     newEvent.offset = moment(this.limits.start).add(newEvent.offset, 'days').add(i, actualUnit).diff(moment(this.limits.start), 'days')
+
                     eventList.push(newEvent)
                 }
                 return eventList
@@ -587,12 +570,11 @@
         },
 
         mounted() {
-            this.buildGroupByData()
+            this.buildGanttData()
         },
 
         watch: {
-            groupings: 'buildGroupByData',
-            repeats: 'buildGroupByData',
+            processedEvents: 'buildGanttData',
         },
     }
 </script>
@@ -669,7 +651,7 @@
     #timeline {
         width: 100%;
         display: block;
-        padding-bottom: 10px;
+        padding-bottom: 2em;
         overflow-x: scroll;
     }
     #event-types {
@@ -682,7 +664,6 @@
     }
     #timeline-events {
         overflow: visible;
-        overflow-x: scroll;
     }
     #timeline-index {
         height:30px;
